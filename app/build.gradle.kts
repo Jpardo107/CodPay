@@ -82,4 +82,7 @@ dependencies {
     implementation(libs.mpandroidchart)
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
+    //Datastore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-preferences-core:1.0.0")
 }
