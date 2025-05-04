@@ -1,5 +1,6 @@
 package com.jaime.codpay.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.gson.Gson
+import com.jaime.codpay.data.Pedido
 import com.jaime.codpay.ui.components.EntregarScreen.AditionalCommment
 import com.jaime.codpay.ui.components.EntregarScreen.AdressDelivery
 import com.jaime.codpay.ui.components.EntregarScreen.DeliveryHeaderInfo
@@ -28,12 +31,20 @@ import com.jaime.codpay.utils.AbrirNavegacion
 import com.jaime.codpay.utils.LlamarTelefono
 
 @Composable
-fun EntregarScreen(navController: NavController) {
+fun EntregarScreen(navController: NavController, pedidoJson: String) {
     var mostrarDialogoPayment by remember { mutableStateOf(false) }
     var mostrarDialogoEfectivo by remember { mutableStateOf(false) }
     var pagoRecibido by remember { mutableStateOf("") }
-    var valorRecaudar = 12000.0 // Este vendrá luego de la API
     var mostrarDialogoTarjeta by remember { mutableStateOf(false) }
+
+    // Deserializar el JSON a un objeto Pedido
+    val gson = Gson()
+    val pedidoData: Pedido? = try {
+        gson.fromJson(pedidoJson, Pedido::class.java)
+    } catch (e: Exception) {
+        Log.e("EntregarScreen", "Error al deserializar el JSON", e)
+        null
+    }
 
     if (mostrarDialogoTarjeta) {
         PagoTarjetaDialog(
@@ -67,7 +78,7 @@ fun EntregarScreen(navController: NavController) {
 
     if (mostrarDialogoEfectivo) {
         PagoEfectivoDialog(
-            valorRecaudar = valorRecaudar,
+            valorRecaudar = pedidoData?.valorRecaudar?.toDouble() ?: 0.0,
             pagoRecibido = pagoRecibido,
             onPagoRecibidoChange = { pagoRecibido = it },
             onPagoExitoso = {
@@ -89,29 +100,38 @@ fun EntregarScreen(navController: NavController) {
             .padding(vertical = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(28.dp))
-        TitleSection(nombre = "Pedido PED123456")
+        TitleSection(nombre = "Pedido ${pedidoData?.numeroPedidoCodpay ?: "N/A"}")
         Column(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center
         ) {
-            DeliveryHeaderInfo(fecha = "01/01/2025", "15:00", horaFin = "15:05")
+            DeliveryHeaderInfo(
+                fecha = pedidoData?.fechaPedido?.substring(0, 10) ?: "N/A",
+                horaIncio = pedidoData?.fechaPedido?.substring(11, 16) ?: "N/A",
+                horaFin = "N/A" // No tenemos hora fin en el JSON
+            )
             RecipientCard(
-                nombreDestinatario = "Juanito Perez Echeverria",
-                onLlamarClick = { LlamarTelefono(context, "+56928461185") }
+                nombreDestinatario = pedidoData?.clienteFinal?.nombreClienteFinal ?: "N/A",
+                onLlamarClick = {
+                    pedidoData?.clienteFinal?.telefonoClienteFinal?.let {
+                        LlamarTelefono(context, it)
+                    }
+                }
             )
             AdressDelivery(
-                direccionCliente = "Dos Oriente 429",
-                regionCliente = "Los Rios",
-                comunaCliente = "Valdivia",
+                direccionCliente = pedidoData?.clienteFinal?.direccionEntrega ?: "N/A",
+                regionCliente = pedidoData?.clienteFinal?.regionEntrega ?: "N/A",
+                comunaCliente = pedidoData?.clienteFinal?.comunaEntrega ?: "N/A",
                 onMaps = {
-                    val direc = "Dos Oriente 429, Valdivia"
+                    val direc =
+                        "${pedidoData?.clienteFinal?.direccionEntrega ?: ""}, ${pedidoData?.clienteFinal?.comunaEntrega ?: ""}"
                     AbrirNavegacion(context, direc)
                 }
             )
-            AditionalCommment(comentario = "Casa con araucaria afuera")
+            AditionalCommment(comentario = pedidoData?.clienteFinal?.referenciaDireccion ?: "N/A")
             Recaudation(
-                amount = valorRecaudar,
+                amount = pedidoData?.valorRecaudar?.toDouble() ?: 0.0,
                 onRecaudarClick = {
                     mostrarDialogoPayment = true
                 }

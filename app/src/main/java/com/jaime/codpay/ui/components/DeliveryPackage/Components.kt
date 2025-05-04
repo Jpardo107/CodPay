@@ -68,33 +68,7 @@ fun QrPreviewBox(onQrScanned: (String) -> Unit){
 
 }
 
-/*@Preview(showBackground = true, showSystemUi = false)
-@Composable
-fun QrPreviewBoxPreview(){
-    CodePayTheme {
-        QrPreviewBox()
-    }
-}
 
-@Composable
-fun ScanSectionDelivery(){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        QrPreviewBox()
-        ScanButton { /**/ }
-    }
-}
-
-@Preview
-@Composable
-fun ScanSectionDeliveryPreview(){
-    ScanSectionDelivery()
-}*/
 
 @Composable
 fun PedidoInput(pedido: String, onPedidoChange: (String) -> Unit){

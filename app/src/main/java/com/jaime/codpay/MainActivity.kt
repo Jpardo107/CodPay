@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -67,8 +68,12 @@ class MainActivity : ComponentActivity() {
                 composable(Screen.Delivery.route) {
                     DeliveryScreen(navController = navController)
                 }
-                composable(Screen.Entregar.route) {
-                    EntregarScreen(navController = navController)
+                composable(
+                    route = Screen.Entregar.routeWithArgs,
+                    arguments = listOf(navArgument("pedidoJson") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val pedidoJson = backStackEntry.arguments?.getString("pedidoJson") ?: ""
+                    EntregarScreen(navController = navController, pedidoJson = pedidoJson)
                 }
                 composable(Screen.DeliveryPackage.route) {
                     DeliveryPackageScreen(navController = navController)

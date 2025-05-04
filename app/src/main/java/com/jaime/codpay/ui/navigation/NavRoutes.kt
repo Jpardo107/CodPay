@@ -10,6 +10,8 @@ sealed class Screen(val route: String) {
     }
     object VerRuta : Screen("ver_ruta")
     object Delivery: Screen("delivery")
-    object Entregar: Screen("entregar")
+    object Entregar : Screen("entregar_screen"){
+        const val routeWithArgs = "entregar_screen/{pedidoJson}"
+    }
     object DeliveryPackage: Screen("delivery_package_screen")
 }

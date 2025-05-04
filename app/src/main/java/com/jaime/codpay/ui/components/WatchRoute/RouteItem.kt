@@ -36,7 +36,7 @@ fun RouteItem(
     cliente: String,
     direccion: String,
     comuna: String,
-    pedido: Int,
+    pedido: String,
     onIrClick: () -> Unit,
     onMoveUpClick : () -> Unit,
     onMoveDownClick: () -> Unit,
@@ -45,14 +45,14 @@ fun RouteItem(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         tonalElevation = 2.dp,
         shape = RoundedCornerShape(8.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
