@@ -2,6 +2,7 @@ package com.jaime.codpay.ui.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -49,15 +50,15 @@ import com.jaime.codpay.ui.components.DeliveryPackage.PedidoInput
 import com.jaime.codpay.ui.components.DeliveryPackage.QrPreviewBox
 import com.jaime.codpay.ui.components.DeliveryPackage.ScanButton
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
+import com.jaime.codpay.ui.navigation.Screen
 import java.util.concurrent.Executors
 
 @Composable
 fun DeliveryScreen(
     navController: NavController,
-    onVolver: () -> Unit = { navController.popBackStack() },
-    onReagendar: () -> Unit = {},
-    onRechazar: () -> Unit = {},
+    onVolver: () -> Unit = { navController.popBackStack() }
 ) {
+    val gson = Gson()
     var pedido by remember { mutableStateOf("") }
     var pedidoData by remember { mutableStateOf<Pedido?>(null) }
     val accionesHabilitadas = pedido.isNotBlank()
@@ -103,7 +104,6 @@ fun DeliveryScreen(
                 pedido = it
                 if(it.isNotBlank()){
                     try {
-                        val gson = Gson()
                         pedidoData = gson.fromJson(it, Pedido::class.java)
                     } catch (e: Exception) {
                         Toast.makeText(context, "Error al procesar el QR", Toast.LENGTH_SHORT).show()
@@ -135,7 +135,15 @@ fun DeliveryScreen(
             backgroundColor = Color(255, 193, 7),
             disablebgColor = Color(249, 231, 159),
             enabled = accionesHabilitadas,
-            onClick = onReagendar,
+            onClick = {
+                if (pedidoData != null) {
+                    val gson = Gson()
+                    val pedidoJson = gson.toJson(pedidoData)
+                    navController.navigate("reagendar_screen/$pedidoJson")
+                } else {
+                    Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
+                }
+            },
         )
 
         ActionButton(
@@ -143,7 +151,15 @@ fun DeliveryScreen(
             backgroundColor = Color(220, 53, 69),
             disablebgColor = Color(245, 183, 177),
             enabled = accionesHabilitadas,
-            onClick = onRechazar
+            onClick = {
+                if (pedidoData != null) {
+                    val gson = Gson()
+                    val pedidoJson = gson.toJson(pedidoData)
+                    navController.navigate("rechazar_screen/$pedidoJson")
+                } else {
+                    Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
+                }
+            }
         )
         Button(
             onClick = onVolver,

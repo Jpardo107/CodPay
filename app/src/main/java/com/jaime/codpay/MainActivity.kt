@@ -16,6 +16,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.gson.Gson
+import com.jaime.codpay.data.Pedido
 import com.jaime.codpay.ui.navigation.Screen
 import com.jaime.codpay.ui.screens.DeliveryPackageScreen
 import com.jaime.codpay.ui.screens.DeliveryScreen
@@ -23,6 +25,8 @@ import com.jaime.codpay.ui.screens.EntregarScreen
 import com.jaime.codpay.ui.screens.HomeScreen
 import com.jaime.codpay.ui.screens.InitRouteScreen
 import com.jaime.codpay.ui.screens.LoginScreen
+import com.jaime.codpay.ui.screens.ReagendarScreen
+import com.jaime.codpay.ui.screens.RechazarScreen
 import com.jaime.codpay.ui.screens.TwoFactorScreen
 import com.jaime.codpay.ui.screens.WatchRouteScreen
 import com.jaime.codpay.ui.theme.CodPayTheme
@@ -68,6 +72,10 @@ class MainActivity : ComponentActivity() {
                 composable(Screen.Delivery.route) {
                     DeliveryScreen(navController = navController)
                 }
+                composable(Screen.DeliveryPackage.route) {
+                    DeliveryPackageScreen(navController = navController)
+                }
+
                 composable(
                     route = Screen.Entregar.routeWithArgs,
                     arguments = listOf(navArgument("pedidoJson") { type = NavType.StringType })
@@ -75,9 +83,23 @@ class MainActivity : ComponentActivity() {
                     val pedidoJson = backStackEntry.arguments?.getString("pedidoJson") ?: ""
                     EntregarScreen(navController = navController, pedidoJson = pedidoJson)
                 }
-                composable(Screen.DeliveryPackage.route) {
-                    DeliveryPackageScreen(navController = navController)
+
+                composable(
+                    route = Screen.Reagendar.routeWithArgs,
+                    arguments = listOf(navArgument("pedidoJson") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val pedidoJson = backStackEntry.arguments?.getString("pedidoJson") ?: ""
+                    ReagendarScreen(navController = navController, onReagendarClick = { motivo, fecha -> /* acción */ },pedidoJson = pedidoJson)
                 }
+
+                composable(
+                    route = Screen.Rechazar.routeWithArgs,
+                    arguments = listOf(navArgument("pedidoJson") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val pedidoJson = backStackEntry.arguments?.getString("pedidoJson") ?: ""
+                    RechazarScreen(navController = navController, onRechazarClick = { motivo -> /* acción */ },pedidoJson = pedidoJson)
+                }
+
             }
         }
     }
