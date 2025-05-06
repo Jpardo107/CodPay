@@ -1,7 +1,12 @@
 package com.jaime.codpay.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+
+@Entity
 data class Ruta(
-    val idRuta: Int,
+    @PrimaryKey(autoGenerate = true) val idRuta: Int = 0,
     val nombreRuta: String,
     val estadoRuta: String,
     val fechaRuta: String,
@@ -19,5 +24,6 @@ data class Ruta(
 
 data class RutasResponse(
     val status: String,
-    val data: List<Ruta>
+    val data: List<Ruta>,
+    val rutas: List<Ruta>
 )

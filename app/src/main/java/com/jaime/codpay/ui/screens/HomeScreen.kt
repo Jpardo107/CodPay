@@ -7,14 +7,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.jaime.codpay.ui.components.Home.HomeMenu
 import com.jaime.codpay.ui.components.Home.RoutePieChart
 import com.jaime.codpay.ui.components.Home.RouteSumaryCard
 import com.jaime.codpay.ui.components.Home.UserGreeting
 import com.jaime.codpay.ui.navigation.Screen
+import com.jaime.codpay.ui.viewmodel.RutasViewModel
+import com.jaime.codpay.ui.viewmodel.RutasViewModelFactory
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -22,6 +28,7 @@ fun HomeScreen(navController: NavController) {
     /** Acción para resumen de cobros */
     /** Acción para resumen de cobros */
     /** Acción para ver resumen */
+
     Column(
         modifier = Modifier
             .fillMaxSize()

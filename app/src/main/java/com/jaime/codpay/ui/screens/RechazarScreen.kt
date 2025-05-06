@@ -31,7 +31,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
 import com.jaime.codpay.data.ClienteFinal
-import com.jaime.codpay.data.Paquete
 import com.jaime.codpay.data.Pedido
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
 import com.jaime.codpay.ui.components.ReagendarScreen.DatePickerField

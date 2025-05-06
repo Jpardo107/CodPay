@@ -94,10 +94,10 @@ fun DeliveryScreen(
             }
 
         }
-        ScanButton(onClick = {
-            //pedido = "PED123456" // Eliminamos esta linea
-            Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
-        })
+//        ScanButton(onClick = {
+//            //pedido = "PED123456" // Eliminamos esta linea
+//            Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
+//        })
         PedidoInput(
             pedido = pedido,
             onPedidoChange = {

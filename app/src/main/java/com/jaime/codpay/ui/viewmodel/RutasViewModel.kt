@@ -32,23 +32,25 @@ class RutasViewModel(private val context: Context) : ViewModel() {
         cargarRutas()
     }
 
-    private fun cargarRutas() {
+     fun cargarRutas() {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             try {
                 // Recolectar el valor del Flow de forma segura
-                //val idConductor = userDataStore.getUserId.firstOrNull()
-                val idConductor = 44
-                Log.d("RutasViewModel", "ID del conductor obtenido: $idConductor")
+                val idConductor = userDataStore.getUserId.firstOrNull()
+                val idEmpresa = userDataStore.getUserIdEmpresa.firstOrNull() ?: 0
+                Log.d("RutasViewModel", "ID empresa obtenido: $idEmpresa")
+                Log.d("RutasViewModel", "ID conductor obtenido: $idConductor")
                 if (idConductor != null) {
-                    val response: Response<RutasResponse> = apiService.getRutas()
+                    val response: Response<RutasResponse> = apiService.getRutas(idEmpresa)
                     if (response.isSuccessful) {
                         val rutasResponse = response.body()
                         if (rutasResponse != null && rutasResponse.status == "success") {
                             val rutasFiltradas = rutasResponse.data.filter { it.idConductor == idConductor }
                             _rutas.value = rutasFiltradas
-                            Log.d("RutasViewModel", "Rutas cargadas: ${rutasFiltradas.size}")
+                            Log.d("RutasViewModel", "Envios: ${rutasFiltradas.size}")
+                            Log.d("RutasViewModel", "Ruta: ${rutasFiltradas}")
                         } else {
                             _error.value = "Error al obtener las rutas: ${rutasResponse?.status}"
                         }

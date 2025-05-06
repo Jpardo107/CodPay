@@ -7,9 +7,9 @@ data class LoginResponse(
 )
 
 data class Conductor(
-    val idUsuarioB2B: Int,
+    val idConductor: Int,
     val nombreUserB2B: String,
-    val apellidoUserB2B: String,
+    val apellidosUserB2B: String,
     val emailUserB2B: String,
     val telefonoUserB2B: String,
     val rutUsuarioB2B: String,

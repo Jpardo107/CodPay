@@ -44,11 +44,11 @@ class LoginViewModel(private val context: Context) : ViewModel() {
                     val loginResponse = response.body()!!
                     viewModelScope.launch {
                         userDataStore.saveUser(
-                            loginResponse.conductor.idUsuarioB2B,
+                            loginResponse.conductor.idConductor,
                             loginResponse.conductor.nombreUserB2B,
                             loginResponse.conductor.emailUserB2B,
                             loginResponse.token,
-                            loginResponse.conductor.apellidoUserB2B,
+                            loginResponse.conductor.apellidosUserB2B,
                             loginResponse.conductor.telefonoUserB2B,
                             loginResponse.conductor.rutUsuarioB2B,
                             loginResponse.conductor.idEmpresa,

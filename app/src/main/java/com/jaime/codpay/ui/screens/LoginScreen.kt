@@ -47,6 +47,8 @@ import com.jaime.codpay.R
 import com.jaime.codpay.ui.navigation.Screen
 import com.jaime.codpay.ui.viewmodel.LoginViewModel
 import com.jaime.codpay.ui.viewmodel.LoginViewModelFactory
+import com.jaime.codpay.ui.viewmodel.RutasViewModel
+import com.jaime.codpay.ui.viewmodel.RutasViewModelFactory
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -57,6 +59,7 @@ fun LoginScreen(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(context))
+    val rutasViewModel: RutasViewModel = viewModel(factory = RutasViewModelFactory(context))
 
     val loginResponse by loginViewModel.loginResponse.collectAsState()
     val isLoading by loginViewModel.isLoading.collectAsState()
@@ -138,6 +141,7 @@ fun LoginScreen(navController: NavController) {
         Button(
             onClick = {
                 loginViewModel.login(email, clave)
+                rutasViewModel.cargarRutas()
             },
             enabled = !isLoading,
             modifier = Modifier
