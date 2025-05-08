@@ -3,6 +3,7 @@ package com.jaime.codpay.ui.screens
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,13 +14,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,37 +36,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.gson.Gson
+import com.jaime.codpay.data.Paquete
+import com.jaime.codpay.data.QrData
 import com.jaime.codpay.ui.components.DeliveryPackage.QrPreviewBox
-import com.jaime.codpay.ui.components.InitRoute.RouteItem
 import com.jaime.codpay.ui.components.InitRoute.ConfirmacionDialog
 import com.jaime.codpay.ui.components.InitRoute.StartRouteButton
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
 import com.jaime.codpay.ui.theme.CodPayTheme
+import com.jaime.codpay.ui.viewmodel.PaquetesViewModel
+import com.jaime.codpay.ui.viewmodel.PaquetesViewModelFactory
 import com.jaime.codpay.ui.viewmodel.RutasViewModel
 import com.jaime.codpay.ui.viewmodel.RutasViewModelFactory
-import com.jaime.codpay.utils.AbrirNavegacion
-import com.jaime.codpay.utils.swap
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun InitRouteScreen(nombreRuta: String, navController: NavController){
-
+fun InitRouteScreen(nombreRuta: String, navController: NavController) {
 
     val context = LocalContext.current
     val rutasViewModel: RutasViewModel = viewModel(factory = RutasViewModelFactory(context))
+    val paquetesViewModel: PaquetesViewModel =
+        viewModel(factory = PaquetesViewModelFactory(context, rutasViewModel.paquetesRepository))
     val rutas by rutasViewModel.rutas.collectAsState()
+    val paquetes by paquetesViewModel.paquetes.collectAsState()
     var allPackagesScanned by remember { mutableStateOf(false) }
-    var tieneSegundaRuta by remember { mutableStateOf(true) } // cambia a false para probar el otro caso
+    var tieneSegundaRuta by remember { mutableStateOf(true) }
     var mostrarDialogo by remember { mutableStateOf(false) }
     val isLoading by rutasViewModel.isLoading.collectAsState()
     val error by rutasViewModel.error.collectAsState()
+    val gson = Gson()
 
     val cameraPermissionGranted by rememberCameraPermissionState()
     val listState = rememberLazyListState()
@@ -98,19 +107,18 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController){
             if (cameraPermissionGranted) {
                 QrPreviewBox(
                     onQrScanned = { qrCode ->
+                        try {
+                            val qrData = gson.fromJson(qrCode, QrData::class.java)
+                            paquetesViewModel.eliminarPaquete(qrData.idPaquete)
+                            Log.d("QR_SCAN", "ID Paquete escaneado: ${qrData.idPaquete}")
+                        } catch (e: Exception) {
+                            Log.e("QR_SCAN", "Error al parsear el QR", e)
+                            Toast.makeText(context, "Error al procesar el QR", Toast.LENGTH_SHORT).show()
+                        }
                         Log.d("QR_SCAN", "QR leído: $qrCode")
-//                        pedido = qrCode
-//                        try {
-//                            val gson = Gson()
-//                            pedidoData = gson.fromJson(qrCode, Pedido::class.java)
-//                        } catch (e: Exception) {
-//                            Toast.makeText(context, "Error al procesar el QR", Toast.LENGTH_SHORT).show()
-//                            pedidoData = null
-//                        }
                     }
                 )
             }
-
         }
         Spacer(modifier = Modifier.height(32.dp))
         if (isLoading) {
@@ -129,29 +137,19 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController){
                 state = listState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f), // Para que ocupe el espacio disponible
-                contentPadding = PaddingValues(16.dp), // Padding de la lista
-                verticalArrangement = Arrangement.spacedBy(8.dp) // Espacio entre items
+                    .weight(1f),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(rutas, key = { _, item -> item.idEnvio }) { index, ruta ->
-                    RouteItem(
-//                        cliente = ruta.nombreClienteFinal,
-//                        direccion = ruta.direccionEntrega,
-//                        comuna = ruta.comunaEntrega,
-//                        pedido = ruta.numeroRefPedidoB2C,
-                        cliente = "ruta.nombreClienteFinal",
-                        direccion = "ruta.direccionEntrega",
-                        comuna = "ruta.comunaEntrega",
-                        pedido = "ruta.numeroRefPedidoB2C",
-                        modifier = Modifier.animateItemPlacement()
-                    )
+                items(paquetes, key = { item -> item.idPaquete }) { paquete ->
+                    PackageItem(paquete = paquete, modifier = Modifier.animateItemPlacement())
                 }
             }
         }
 
         StartRouteButton(
             allPackagesScanned = allPackagesScanned,
-            onClick = {mostrarDialogo = true},
+            onClick = { mostrarDialogo = true },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         if (mostrarDialogo) {
@@ -160,11 +158,10 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController){
                 onCerrar = { mostrarDialogo = false },
                 onContinuar = {
                     mostrarDialogo = false
-                    navController.popBackStack() // simula ir al home
+                    navController.popBackStack()
                 },
                 onEscanearSegunda = {
                     mostrarDialogo = false
-                    // En el futuro: cargar lista de bultos 2da ruta
                 },
                 onVolver = {
                     mostrarDialogo = false
@@ -172,7 +169,51 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController){
                 }
             )
         }
-
     }
 }
 
+@Composable
+fun PackageItem(paquete: Paquete, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .height(60.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = Color(0xFFb0A5A6)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Código: ${paquete.codigoPaquete}",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            Text(text = "Descripción: ${paquete.descripcionPaquete}", fontSize = 16.sp)
+        }
+    }
+}
+
+//@OptIn(ExperimentalFoundationApi::class)
+//@Preview(showBackground = true)
+//@Composable
+//fun InitRouteScreenPreview() {
+//    Surface(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(8.dp)
+//            .height(60.dp),
+//        shape = RoundedCornerShape(8.dp),
+//        color = Color(0xFFb0A5A6)
+//    ) {
+//        Column(
+//            verticalArrangement = Arrangement.Center,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            Text(text = "Cod: COD001", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+//            Text(text = "Descripcion: Televisor 40", fontSize = 16.sp)
+//        }
+//    }
+//}

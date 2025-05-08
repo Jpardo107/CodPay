@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,19 +39,24 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.jaime.codpay.data.Pedido
+import com.jaime.codpay.data.Envio
+//import com.jaime.codpay.data.Pedido
 import com.jaime.codpay.ui.components.DeliveryPackage.ActionButton
 import com.jaime.codpay.ui.components.DeliveryPackage.PedidoInput
 import com.jaime.codpay.ui.components.DeliveryPackage.QrPreviewBox
-import com.jaime.codpay.ui.components.DeliveryPackage.ScanButton
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
 import com.jaime.codpay.ui.navigation.Screen
+import com.jaime.codpay.ui.viewmodel.EnviosViewModel
+import com.jaime.codpay.ui.viewmodel.EnviosViewModelFactory
+import com.jaime.codpay.ui.viewmodel.EnviosViewModelFactoryDelivery
 import java.util.concurrent.Executors
 
 @Composable
@@ -60,9 +66,16 @@ fun DeliveryScreen(
 ) {
     val gson = Gson()
     var pedido by remember { mutableStateOf("") }
-    var pedidoData by remember { mutableStateOf<Pedido?>(null) }
     val accionesHabilitadas = pedido.isNotBlank()
     val context = LocalContext.current
+    val enviosViewModel: EnviosViewModel = viewModel(factory = EnviosViewModelFactoryDelivery(context))
+    val envios by enviosViewModel.envios.collectAsState()
+    var envioEncontrado by remember { mutableStateOf<Envio?>(null) }
+
+    LaunchedEffect(key1 = true){
+        enviosViewModel.getEnvios()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -84,34 +97,28 @@ fun DeliveryScreen(
                         pedido = qrCode
                         try {
                             val gson = Gson()
-                            pedidoData = gson.fromJson(qrCode, Pedido::class.java)
+                           val jsonObject = gson.fromJson(qrCode, JsonObject::class.java)
+                            val idEnvio = jsonObject.get("idEnvio").asInt
+                            Log.d("DeliveryScreen", "idEnvio escaneado: $idEnvio") //
+                            pedido = jsonObject.get("numeroRefPedidoB2C").asString
+                            envioEncontrado = enviosViewModel.getEnvioByIdEnvio(idEnvio)
+                            Log.d("DeliveryScreen", "Pedido Encontrado: $envioEncontrado")
+                            if (envioEncontrado == null) {
+                                Toast.makeText(context, "Envío no encontrado", Toast.LENGTH_SHORT).show()
+                            }
                         } catch (e: Exception) {
                             Toast.makeText(context, "Error al procesar el QR", Toast.LENGTH_SHORT).show()
-                            pedidoData = null
+                            envioEncontrado = null
                         }
                     }
                 )
             }
 
         }
-//        ScanButton(onClick = {
-//            //pedido = "PED123456" // Eliminamos esta linea
-//            Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
-//        })
         PedidoInput(
             pedido = pedido,
             onPedidoChange = {
                 pedido = it
-                if(it.isNotBlank()){
-                    try {
-                        pedidoData = gson.fromJson(it, Pedido::class.java)
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Error al procesar el QR", Toast.LENGTH_SHORT).show()
-                        pedidoData = null
-                    }
-                }else{
-                    pedidoData = null
-                }
             }
         )
         ActionButton(
@@ -120,10 +127,10 @@ fun DeliveryScreen(
             disablebgColor = Color(171, 235, 198),
             enabled = accionesHabilitadas,
             onClick = {
-                if (pedidoData != null) {
+                if (envioEncontrado != null) {
                     val gson = Gson()
-                    val pedidoJson = gson.toJson(pedidoData)
-                    navController.navigate("entregar_screen/$pedidoJson")
+                    val envioJson = gson.toJson(envioEncontrado)
+                    navController.navigate("entregar_screen/$envioJson")
                 } else {
                     Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
                 }
@@ -136,10 +143,10 @@ fun DeliveryScreen(
             disablebgColor = Color(249, 231, 159),
             enabled = accionesHabilitadas,
             onClick = {
-                if (pedidoData != null) {
+                if (envioEncontrado != null) {
                     val gson = Gson()
-                    val pedidoJson = gson.toJson(pedidoData)
-                    navController.navigate("reagendar_screen/$pedidoJson")
+                    val envioJson = gson.toJson(envioEncontrado)
+                    navController.navigate("reagendar_screen/$envioJson")
                 } else {
                     Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
                 }
@@ -152,10 +159,10 @@ fun DeliveryScreen(
             disablebgColor = Color(245, 183, 177),
             enabled = accionesHabilitadas,
             onClick = {
-                if (pedidoData != null) {
+                if (envioEncontrado != null) {
                     val gson = Gson()
-                    val pedidoJson = gson.toJson(pedidoData)
-                    navController.navigate("rechazar_screen/$pedidoJson")
+                    val envioJson = gson.toJson(envioEncontrado)
+                    navController.navigate("rechazar_screen/$envioJson")
                 } else {
                     Toast.makeText(context, "Escanee un QR primero", Toast.LENGTH_SHORT).show()
                 }

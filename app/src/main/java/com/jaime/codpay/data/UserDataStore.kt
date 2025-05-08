@@ -1,6 +1,7 @@
 package com.jaime.codpay.data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -54,7 +55,9 @@ class UserDataStore(private val context: Context) {
         }
     val getUserIdEmpresa: Flow<Int?> = context.dataStore.data
         .map { preferences ->
-            preferences[USER_IDEMPRESA_KEY] ?: 0
+            val idEmpresa = preferences[USER_IDEMPRESA_KEY] ?: 0
+            Log.d("UserDataStore", "getUserIdEmpresa: $idEmpresa")
+            idEmpresa
         }
     val getUserEstado: Flow<Int?> = context.dataStore.data
         .map { preferences ->
@@ -66,7 +69,17 @@ class UserDataStore(private val context: Context) {
         }
 
     //save email into datastore
-    suspend fun saveUser(id: Int, name: String, email: String, token: String, apellido: String, telefono: String, rut: String, idEmpresa: Int, estado: Int) {
+    suspend fun saveUser(
+        id: Int,
+        name: String,
+        email: String,
+        token: String,
+        apellido: String,
+        telefono: String,
+        rut: String,
+        idEmpresa: Int,
+        estado: Int
+    ) {
         context.dataStore.edit { preferences ->
             preferences[USER_ID_KEY] = id
             preferences[USER_NAME_KEY] = name
@@ -77,6 +90,12 @@ class UserDataStore(private val context: Context) {
             preferences[USER_RUT_KEY] = rut
             preferences[USER_IDEMPRESA_KEY] = idEmpresa
             preferences[USER_ESTADO_KEY] = estado
+        }
+    }
+    suspend fun saveIdEmpresa(idEmpresa: Int) {
+        Log.d("UserDataStore", "saveIdEmpresa: $idEmpresa")
+        context.dataStore.edit { preferences ->
+            preferences[USER_IDEMPRESA_KEY] = idEmpresa
         }
     }
 }

@@ -10,13 +10,18 @@ import kotlinx.coroutines.launch
 import com.jaime.codpay.data.RetrofitClient
 import com.jaime.codpay.data.LoginResponse
 import com.jaime.codpay.data.LoginRequest
+import com.jaime.codpay.data.RutaDataStore
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.jaime.codpay.data.Conductor
 import com.jaime.codpay.data.UserDataStore
+import com.jaime.codpay.data.RutasRepository
 
-class LoginViewModel(private val context: Context) : ViewModel() {
+class LoginViewModel(
+    private val context: Context,
+    private val rutasRepository: RutasRepository,
+    private val rutaDataStore: RutaDataStore
+) : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -55,6 +60,9 @@ class LoginViewModel(private val context: Context) : ViewModel() {
                             loginResponse.conductor.estadoUsuarioB2B
                         )
                         Log.d("LoginViewModel", "Datos guardados: ${loginResponse.conductor}")
+                        // Llamar a getRutas() después de un login exitoso
+                        rutasRepository.getRutas()
+                        userDataStore.saveIdEmpresa(loginResponse.conductor.idEmpresa)
                     }
                 } else {
                     _error.value = "Error en el login: ${response.code()}"

@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.gson.Gson
-import com.jaime.codpay.data.Pedido
+import com.jaime.codpay.data.Envio
 import com.jaime.codpay.ui.components.EntregarScreen.AditionalCommment
 import com.jaime.codpay.ui.components.EntregarScreen.AdressDelivery
 import com.jaime.codpay.ui.components.EntregarScreen.DeliveryHeaderInfo
@@ -29,18 +29,20 @@ import com.jaime.codpay.ui.components.EntregarScreen.RecipientCard
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
 import com.jaime.codpay.utils.AbrirNavegacion
 import com.jaime.codpay.utils.LlamarTelefono
+import kotlin.text.substring
+import kotlin.text.toDouble
 
 @Composable
-fun EntregarScreen(navController: NavController, pedidoJson: String) {
+fun EntregarScreen(navController: NavController, envioJson: String) {
     var mostrarDialogoPayment by remember { mutableStateOf(false) }
     var mostrarDialogoEfectivo by remember { mutableStateOf(false) }
     var pagoRecibido by remember { mutableStateOf("") }
     var mostrarDialogoTarjeta by remember { mutableStateOf(false) }
 
-    // Deserializar el JSON a un objeto Pedido
+    // Deserializar el JSON a un objeto Envio
     val gson = Gson()
-    val pedidoData: Pedido? = try {
-        gson.fromJson(pedidoJson, Pedido::class.java)
+    val envioData: Envio? = try {
+        gson.fromJson(envioJson, Envio::class.java)
     } catch (e: Exception) {
         Log.e("EntregarScreen", "Error al deserializar el JSON", e)
         null
@@ -78,7 +80,8 @@ fun EntregarScreen(navController: NavController, pedidoJson: String) {
 
     if (mostrarDialogoEfectivo) {
         PagoEfectivoDialog(
-            valorRecaudar = pedidoData?.valorRecaudar?.toDouble() ?: 0.0,
+            //valorRecaudar = envioData?.valorRecaudar?.toDouble() ?: 0.0,
+            valorRecaudar = 15000.0,
             pagoRecibido = pagoRecibido,
             onPagoRecibidoChange = { pagoRecibido = it },
             onPagoExitoso = {
@@ -100,38 +103,39 @@ fun EntregarScreen(navController: NavController, pedidoJson: String) {
             .padding(vertical = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(28.dp))
-        TitleSection(nombre = "Pedido ${pedidoData?.numeroPedidoCodpay ?: "N/A"}")
+        TitleSection(nombre = "Envio: ${envioData?.numeroRefPedidoB2C ?: "N/A"}")
         Column(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center
         ) {
             DeliveryHeaderInfo(
-                fecha = pedidoData?.fechaPedido?.substring(0, 10) ?: "N/A",
-                horaIncio = pedidoData?.fechaPedido?.substring(11, 16) ?: "N/A",
+                fecha = envioData?.fechaEnvio?.substring(0, 10) ?: "N/A",
+                horaIncio = envioData?.fechaEnvio?.substring(11, 16) ?: "N/A",
                 horaFin = "N/A" // No tenemos hora fin en el JSON
             )
             RecipientCard(
-                nombreDestinatario = pedidoData?.clienteFinal?.nombreClienteFinal ?: "N/A",
+                nombreDestinatario = envioData?.clienteFinal?.nombreClienteFinal ?: "N/A",
                 onLlamarClick = {
-                    pedidoData?.clienteFinal?.telefonoClienteFinal?.let {
+                    envioData?.clienteFinal?.telefonoClienteFinal?.let {
                         LlamarTelefono(context, it)
                     }
                 }
             )
             AdressDelivery(
-                direccionCliente = pedidoData?.clienteFinal?.direccionEntrega ?: "N/A",
-                regionCliente = pedidoData?.clienteFinal?.regionEntrega ?: "N/A",
-                comunaCliente = pedidoData?.clienteFinal?.comunaEntrega ?: "N/A",
+                direccionCliente = envioData?.clienteFinal?.direccionEntrega ?: "N/A",
+                regionCliente = envioData?.clienteFinal?.regionEntrega ?: "N/A",
+                comunaCliente = envioData?.clienteFinal?.comunaEntrega ?: "N/A",
                 onMaps = {
                     val direc =
-                        "${pedidoData?.clienteFinal?.direccionEntrega ?: ""}, ${pedidoData?.clienteFinal?.comunaEntrega ?: ""}"
+                        "${envioData?.clienteFinal?.direccionEntrega ?: ""}, ${envioData?.clienteFinal?.comunaEntrega ?: ""}"
                     AbrirNavegacion(context, direc)
                 }
             )
-            AditionalCommment(comentario = pedidoData?.clienteFinal?.referenciaDireccion ?: "N/A")
+            AditionalCommment(comentario = envioData?.clienteFinal?.referenciaDireccion ?: "N/A")
             Recaudation(
-                amount = pedidoData?.valorRecaudar?.toDouble() ?: 0.0,
+                //amount = envioData?.valorRecaudar?.toDouble() ?: 0.0,
+                amount = 15000.0,
                 onRecaudarClick = {
                     mostrarDialogoPayment = true
                 }

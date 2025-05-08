@@ -13,15 +13,15 @@ sealed class Screen(val route: String) {
     object DeliveryPackage: Screen("delivery_package_screen")
 
     object Entregar : Screen("entregar_screen"){
-        const val routeWithArgs = "entregar_screen/{pedidoJson}"
+        const val routeWithArgs = "entregar_screen/{envioJson}"
     }
 
-    object Reagendar : Screen("reagendar_screen/{pedidoJson}") {
-        const val routeWithArgs = "reagendar_screen/{pedidoJson}"
+    object Reagendar : Screen("reagendar_screen/{envioJson}") {
+        const val routeWithArgs = "reagendar_screen/{envioJson}"
     }
 
-    object Rechazar : Screen("rechazar_screen/{pedidoJson}") {
-        const val routeWithArgs = "rechazar_screen/{pedidoJson}"
+    object Rechazar : Screen("rechazar_screen/{envioJson}") {
+        const val routeWithArgs = "rechazar_screen/{envioJson}"
     }
 
 }

@@ -1,44 +1,41 @@
 package com.jaime.codpay.Model
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 
+@ExperimentalGetImage
+class BarcodeAnalizer(private val onCodeScanned: (String) -> Unit) : ImageAnalysis.Analyzer {
 
-@androidx.camera.core.ExperimentalGetImage
-class BarcodeAnalizer(
-    private val onCodeScanned: (String) -> Unit
-) : ImageAnalysis.Analyzer{
-    private var alreadyScanned = false
-    @OptIn(ExperimentalGetImage::class)
+    private val scanner: BarcodeScanner = BarcodeScanning.getClient()
+
+    @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
-        val mediaImage = imageProxy.image ?: run {
-            imageProxy.close()
-            return
-        }
-
-        val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-        val scanner = BarcodeScanning.getClient()
-        scanner.process(inputImage)
-            .addOnSuccessListener { barcodes ->
-                for (barcode in barcodes) {
-                    val value = barcode.rawValue
-                    if (!alreadyScanned && value != null) {
-                        alreadyScanned = true
-                        onCodeScanned(value)
-                        break
+        val mediaImage = imageProxy.image
+        if (mediaImage != null) {
+            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+            scanner.process(image)
+                .addOnSuccessListener { barcodes ->
+                    barcodes.firstOrNull()?.let { barcode ->
+                        barcode.rawValue?.let { rawValue ->
+                            onCodeScanned(rawValue)
+                        }
                     }
                 }
-            }
-            .addOnFailureListener {
-                Log.e("QR_SCAN", "Error al escanear: ${it.localizedMessage}")
-            }
-            .addOnCompleteListener {
-                imageProxy.close()
-            }
+                .addOnFailureListener {
+                    Log.e("QR_SCAN", "Error al analizar la imagen", it)
+                }
+                .addOnCompleteListener {
+                    imageProxy.close() // 🔥 Liberar la imagen para que el flujo continúe
+                }
+        } else {
+            imageProxy.close() // 🔥 Liberar la imagen si es nula
+        }
     }
 }

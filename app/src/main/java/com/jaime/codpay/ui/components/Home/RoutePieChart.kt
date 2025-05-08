@@ -20,12 +20,19 @@ fun RoutePieChart(
     modifier: Modifier = Modifier
 ){
     val porEntregar = totalBultos - (entregados + reagendados + cancelados)
-    val entries = listOf(
-        PieEntry(entregados.toFloat(), "Entregados"),
-        PieEntry(reagendados.toFloat(), "Reagendados"),
-        PieEntry(cancelados.toFloat(), "Cancelados"),
-        PieEntry(porEntregar.toFloat(), "Por entregar"),
-    )
+    val entries = mutableListOf<PieEntry>()
+    if (entregados > 0) {
+        entries.add(PieEntry(entregados.toFloat(), "Entregados"))
+    }
+    if (reagendados > 0) {
+        entries.add(PieEntry(reagendados.toFloat(), "Reagendados"))
+    }
+    if (cancelados > 0) {
+        entries.add(PieEntry(cancelados.toFloat(), "Cancelados"))
+    }
+    if (porEntregar > 0) {
+        entries.add(PieEntry(porEntregar.toFloat(), "Por entregar"))
+    }
     val colors = listOf(
         Color.parseColor("#4CAF50"), // verde
         Color.parseColor("#FFC107"), // amarillo

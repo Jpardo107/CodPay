@@ -28,7 +28,7 @@ fun HomeMenu(
     onVerRuta: () -> Unit,
     onResumenCobros: () -> Unit,
     onCerraRuta: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ){
     Column(
         modifier = Modifier

@@ -25,35 +25,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
-import com.jaime.codpay.data.ClienteFinal
-import com.jaime.codpay.data.Pedido
+import com.jaime.codpay.data.Envio
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
-import com.jaime.codpay.ui.components.ReagendarScreen.DatePickerField
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RechazarScreen(
     navController: NavController,
-    pedidoJson: String,
+    envioJson: String,
     onRechazarClick: (String) -> Unit
 ) {
-    // Deserializar el JSON a un objeto Pedido
+    // Deserializar el JSON a un objeto Envio
     val gson = Gson()
-    val pedidoData: Pedido? = try {
-        gson.fromJson(pedidoJson, Pedido::class.java)
+    val envioData: Envio? = try {
+        gson.fromJson(envioJson, Envio::class.java)
     } catch (e: Exception) {
-        Log.e("EntregarScreen", "Error al deserializar el JSON", e)
+        Log.e("RechazarScreen", "Error al deserializar el JSON", e)
         null
     }
+
     var motivo by remember { mutableStateOf("") }
-    var fecha by remember { mutableStateOf<LocalDate?>(null) }
     val context = LocalContext.current
 
     Box(
@@ -66,7 +60,7 @@ fun RechazarScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column{
+            Column {
                 TitleSection(nombre = "Rechaza pedido")
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -78,11 +72,11 @@ fun RechazarScreen(
                     elevation = 4.dp
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("N° pedido: ${pedidoData?.numeroPedidoCodpay}", modifier = Modifier.padding(vertical = 8.dp))
-                        Text("Cliente: ${pedidoData?.clienteFinal?.nombreClienteFinal}", modifier = Modifier.padding(vertical = 8.dp))
-                        Text("Fono: ${pedidoData?.clienteFinal?.telefonoClienteFinal}", modifier = Modifier.padding(vertical = 8.dp))
-                        Text("Dirección: ${pedidoData?.clienteFinal?.direccionEntrega}, ${pedidoData?.clienteFinal?.comunaEntrega}", modifier = Modifier.padding(vertical = 8.dp))
-                        Text("N° de paquetes: ${pedidoData?.cantidadPaquetes}", modifier = Modifier.padding(vertical = 8.dp))
+                        Text("N° envio: ${envioData?.numeroRefPedidoB2C}", modifier = Modifier.padding(vertical = 8.dp))
+                        Text("Cliente: ${envioData?.clienteFinal?.nombreClienteFinal}", modifier = Modifier.padding(vertical = 8.dp))
+                        Text("Fono: ${envioData?.clienteFinal?.telefonoClienteFinal}", modifier = Modifier.padding(vertical = 8.dp))
+                        Text("Dirección: ${envioData?.clienteFinal?.direccionEntrega}, ${envioData?.clienteFinal?.comunaEntrega}", modifier = Modifier.padding(vertical = 8.dp))
+                        Text("N° de paquetes: ${envioData?.cantidadPaquetes}", modifier = Modifier.padding(vertical = 8.dp))
                     }
                 }
 
@@ -103,9 +97,9 @@ fun RechazarScreen(
                         maxLines = 4,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             cursorColor = Color.DarkGray,
-                            focusedBorderColor = Color.LightGray, // Verde
+                            focusedBorderColor = Color.LightGray,
                             unfocusedBorderColor = Color.LightGray,
-                            focusedLabelColor = Color.LightGray, // Verde
+                            focusedLabelColor = Color.LightGray,
                             unfocusedLabelColor = Color.Gray,
                             containerColor = Color.Transparent,
                             focusedPlaceholderColor = Color.Gray,
@@ -120,7 +114,7 @@ fun RechazarScreen(
 
             Button(
                 onClick = {
-                    if (motivo.isNotBlank() ) {
+                    if (motivo.isNotBlank()) {
                         onRechazarClick(motivo)
                     } else {
                         Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
@@ -131,10 +125,8 @@ fun RechazarScreen(
                     .padding(top = 24.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text("Reagendar", color = Color.White)
+                Text("Rechazar", color = Color.White)
             }
         }
     }
 }
-
-
