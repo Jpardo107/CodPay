@@ -16,6 +16,7 @@ data class Envio(
     val estadoPedido: String,
     val cantidadPaquetes: Int,
     val clienteFinal: ClienteFinal,
+    val valorRecaudar: Double,
     val paquetes: List<Paquete>
 )
 

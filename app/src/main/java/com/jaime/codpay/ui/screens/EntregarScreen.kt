@@ -80,8 +80,7 @@ fun EntregarScreen(navController: NavController, envioJson: String) {
 
     if (mostrarDialogoEfectivo) {
         PagoEfectivoDialog(
-            //valorRecaudar = envioData?.valorRecaudar?.toDouble() ?: 0.0,
-            valorRecaudar = 15000.0,
+            valorRecaudar = envioData?.valorRecaudar?.toDouble() ?: 0.0,
             pagoRecibido = pagoRecibido,
             onPagoRecibidoChange = { pagoRecibido = it },
             onPagoExitoso = {
@@ -134,8 +133,7 @@ fun EntregarScreen(navController: NavController, envioJson: String) {
             )
             AditionalCommment(comentario = envioData?.clienteFinal?.referenciaDireccion ?: "N/A")
             Recaudation(
-                //amount = envioData?.valorRecaudar?.toDouble() ?: 0.0,
-                amount = 15000.0,
+                amount = envioData?.valorRecaudar?.toDouble() ?: 0.0,
                 onRecaudarClick = {
                     mostrarDialogoPayment = true
                 }

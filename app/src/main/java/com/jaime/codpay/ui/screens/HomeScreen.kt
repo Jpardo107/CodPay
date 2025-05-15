@@ -47,7 +47,7 @@ fun HomeScreen(navController: NavController) {
             .fillMaxSize()
             .padding(vertical = 16.dp)
     ) {
-        UserGreeting(userName = "Jaime")
+        UserGreeting(userName = userName ?: "Usuario")
         Spacer(modifier = Modifier.height(32.dp))
         HomeMenu(
             onCreateRuta = {

@@ -67,8 +67,8 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
         viewModel(factory = PaquetesViewModelFactory(context, rutasViewModel.paquetesRepository))
     val rutas by rutasViewModel.rutas.collectAsState()
     val paquetes by paquetesViewModel.paquetes.collectAsState()
-    var allPackagesScanned by remember { mutableStateOf(false) }
-    var tieneSegundaRuta by remember { mutableStateOf(true) }
+    var allPackagesScanned by remember { mutableStateOf(true) }
+    var tieneSegundaRuta by remember { mutableStateOf(false) }
     var mostrarDialogo by remember { mutableStateOf(false) }
     val isLoading by rutasViewModel.isLoading.collectAsState()
     val error by rutasViewModel.error.collectAsState()

@@ -83,7 +83,7 @@ fun DeliveryScreen(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TitleSection(nombre = "Entregar")
+        TitleSection(nombre = "Gestion de envio")
         val cameraPermissionGranted by rememberCameraPermissionState()
         Row(
             modifier = Modifier
@@ -98,7 +98,7 @@ fun DeliveryScreen(
                         try {
                             val gson = Gson()
                            val jsonObject = gson.fromJson(qrCode, JsonObject::class.java)
-                            val idEnvio = jsonObject.get("idEnvio").asInt
+                            val idEnvio = jsonObject.get("numeroRefPedidoB2C").asString
                             Log.d("DeliveryScreen", "idEnvio escaneado: $idEnvio") //
                             pedido = jsonObject.get("numeroRefPedidoB2C").asString
                             envioEncontrado = enviosViewModel.getEnvioByIdEnvio(idEnvio)

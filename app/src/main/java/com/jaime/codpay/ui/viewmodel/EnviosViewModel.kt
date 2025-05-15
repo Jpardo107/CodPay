@@ -45,9 +45,9 @@ class EnviosViewModel(
             }
         }
     }
-    fun getEnvioByIdEnvio(idEnvio: Int): Envio? {
+    fun getEnvioByIdEnvio(idEnvio: String): Envio? {
         Log.d("EnviosViewModel", "getEnvios: idEnvio = $idEnvio")
         Log.d("EnviosViewModel", "Lista de envíos: ${_envios.value}")
-        return _envios.value.find { it.idEnvio == idEnvio }
+        return _envios.value.find { it.numeroRefPedidoB2C == idEnvio }
     }
 }
