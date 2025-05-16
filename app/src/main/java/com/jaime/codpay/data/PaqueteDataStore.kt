@@ -42,4 +42,9 @@ class PaqueteDataStore(private val context: Context) {
             emptyList()
         }
     }
+    suspend fun clearPaquetes() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

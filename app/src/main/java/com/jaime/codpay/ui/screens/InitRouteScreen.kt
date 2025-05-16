@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -62,21 +64,56 @@ import kotlinx.coroutines.launch
 fun InitRouteScreen(nombreRuta: String, navController: NavController) {
 
     val context = LocalContext.current
-    val rutasViewModel: RutasViewModel = viewModel(factory = RutasViewModelFactory(context))
-    val paquetesViewModel: PaquetesViewModel =
-        viewModel(factory = PaquetesViewModelFactory(context, rutasViewModel.paquetesRepository))
+    val viewModelStoreOwner = LocalContext.current as ViewModelStoreOwner
+    val rutasViewModel: RutasViewModel = viewModel(
+        viewModelStoreOwner = viewModelStoreOwner, // Especifica el owner
+        factory = RutasViewModelFactory(context.applicationContext)
+    )
+    val paquetesViewModel: PaquetesViewModel = viewModel(
+        viewModelStoreOwner = viewModelStoreOwner,
+        factory = PaquetesViewModelFactory(context.applicationContext, rutasViewModel.paquetesRepository)
+    )
     val rutas by rutasViewModel.rutas.collectAsState()
     val paquetes by paquetesViewModel.paquetes.collectAsState()
-    var allPackagesScanned by remember { mutableStateOf(true) }
+    //var allPackagesScanned by remember { mutableStateOf(true) }
     var tieneSegundaRuta by remember { mutableStateOf(false) }
     var mostrarDialogo by remember { mutableStateOf(false) }
     val isLoading by rutasViewModel.isLoading.collectAsState()
     val error by rutasViewModel.error.collectAsState()
     val gson = Gson()
 
+    val paquetesPendientes by paquetesViewModel.paquetes.collectAsState()
+    val initialPackageCountLoaded = remember { mutableStateOf(false) }
+    val initialPackageCount = remember { mutableStateOf(0) }
+
     val cameraPermissionGranted by rememberCameraPermissionState()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(paquetesPendientes) {
+        if (!initialPackageCountLoaded.value && paquetesPendientes.isNotEmpty()) {
+            initialPackageCount.value = paquetesPendientes.size
+            initialPackageCountLoaded.value = true
+            Log.d("InitRoute_Debug", "Conteo inicial establecido: ${initialPackageCount.value}")
+        }
+    }
+
+    val allPackagesScanned by remember(
+        initialPackageCountLoaded.value,
+        initialPackageCount.value,
+        paquetesPendientes
+    ) {
+        derivedStateOf {
+            val countIsLoaded = initialPackageCountLoaded.value
+            val initialCount = initialPackageCount.value
+            val pendientesEmpty = paquetesPendientes.isEmpty()
+            Log.d("InitRoute_Debug", "allPackagesScanned Check: Loaded=$countIsLoaded, InitialCount=$initialCount, PendientesEmpty=$pendientesEmpty")
+
+            val result = countIsLoaded && initialCount > 0 && pendientesEmpty
+            Log.d("InitRoute_Debug", "allPackagesScanned Result: $result")
+            result
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -113,7 +150,8 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
                             Log.d("QR_SCAN", "ID Paquete escaneado: ${qrData.idPaquete}")
                         } catch (e: Exception) {
                             Log.e("QR_SCAN", "Error al parsear el QR", e)
-                            Toast.makeText(context, "Error al procesar el QR", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Error al procesar el QR", Toast.LENGTH_SHORT)
+                                .show()
                         }
                         Log.d("QR_SCAN", "QR leído: $qrCode")
                     }
@@ -149,7 +187,17 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
 
         StartRouteButton(
             allPackagesScanned = allPackagesScanned,
-            onClick = { mostrarDialogo = true },
+            onClick = {
+                if (allPackagesScanned) {
+                    mostrarDialogo = true
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Escanea todos los paquetes primero.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         if (mostrarDialogo) {
@@ -158,6 +206,7 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
                 onCerrar = { mostrarDialogo = false },
                 onContinuar = {
                     mostrarDialogo = false
+                    rutasViewModel.markRouteAsInitialized()
                     navController.popBackStack()
                 },
                 onEscanearSegunda = {
@@ -195,25 +244,3 @@ fun PackageItem(paquete: Paquete, modifier: Modifier = Modifier) {
         }
     }
 }
-
-//@OptIn(ExperimentalFoundationApi::class)
-//@Preview(showBackground = true)
-//@Composable
-//fun InitRouteScreenPreview() {
-//    Surface(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(8.dp)
-//            .height(60.dp),
-//        shape = RoundedCornerShape(8.dp),
-//        color = Color(0xFFb0A5A6)
-//    ) {
-//        Column(
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            Text(text = "Cod: COD001", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-//            Text(text = "Descripcion: Televisor 40", fontSize = 16.sp)
-//        }
-//    }
-//}

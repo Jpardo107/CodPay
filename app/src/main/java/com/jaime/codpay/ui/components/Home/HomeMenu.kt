@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeMenu(
+    isRouteInitialized: Boolean,
     onCreateRuta: () -> Unit,
     onEntregar: () -> Unit,
     onVerResumen: () -> Unit,
@@ -29,7 +30,7 @@ fun HomeMenu(
     onResumenCobros: () -> Unit,
     onCerraRuta: () -> Unit,
     modifier: Modifier = Modifier,
-){
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -43,22 +44,31 @@ fun HomeMenu(
             ActionButton(
                 icon = Icons.Default.CheckCircle,
                 text = "Iniciar ruta",
-                backgroundColor = Color(rgb(27 ,135 ,84)),
+                backgroundColor = if (isRouteInitialized) Color.Gray else Color(
+                    rgb(
+                        27,
+                        135,
+                        84
+                    )
+                ), // Cambia color si está deshabilitado
                 iconTint = Color.Black,
                 textColor = Color.Black,
-                onClick = onCreateRuta
+                onClick = onCreateRuta,
+                enabled = !isRouteInitialized
             )
             ActionButton(
                 icon = Icons.Default.Route,
                 text = "Ver Ruta",
-                backgroundColor = Color.Black,
-                onClick = onVerRuta
+                backgroundColor = if (!isRouteInitialized) Color.Gray else Color.Black,
+                onClick = onVerRuta,
+                enabled = isRouteInitialized
             )
             ActionButton(
                 icon = Icons.Default.DeliveryDining,
                 text = "Entregar",
-                backgroundColor = Color.Black,
-                onClick = onEntregar
+                backgroundColor = if (!isRouteInitialized) Color.Gray else Color.Black,
+                onClick = onEntregar,
+                enabled = isRouteInitialized
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -70,20 +80,23 @@ fun HomeMenu(
             ActionButton(
                 icon = Icons.Default.FormatListNumbered,
                 text = "Ver Resumen",
-                backgroundColor = Color.Black,
-                onClick = onVerResumen
+                backgroundColor = if (!isRouteInitialized) Color.Gray else Color.Black,
+                onClick = onVerResumen,
+                enabled = isRouteInitialized
             )
             ActionButton(
                 icon = Icons.Default.ReceiptLong,
                 text = "Resumen de cobros",
-                backgroundColor = Color.Black,
-                onClick = onResumenCobros
+                backgroundColor = if (!isRouteInitialized) Color.Gray else Color.Black,
+                onClick = onResumenCobros,
+                enabled = isRouteInitialized
             )
             ActionButton(
                 icon = Icons.Default.Lock,
                 text = "Cerrar Ruta",
-                backgroundColor = Color(220,53,69),
-                onClick = onCerraRuta
+                backgroundColor = if (!isRouteInitialized) Color.Gray else Color(220, 53, 69),
+                onClick = onCerraRuta,
+                enabled = isRouteInitialized
             )
         }
     }

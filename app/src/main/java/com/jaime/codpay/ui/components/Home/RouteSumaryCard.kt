@@ -44,7 +44,7 @@ fun RouteSumaryCard(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            RouteStatRow(label = "Total Bultos", value = totalBultos.toString())
+            RouteStatRow(label = "Total Envios", value = totalBultos.toString())
             RouteStatRow(label = "Entregados", value = entregados.toString())
             RouteStatRow(label = "Reagendados", value = reagendados.toString())
             RouteStatRow(label = "Cancelados", value = cancelados.toString())

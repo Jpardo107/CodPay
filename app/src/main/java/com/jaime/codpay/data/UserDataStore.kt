@@ -98,4 +98,9 @@ class UserDataStore(private val context: Context) {
             preferences[USER_IDEMPRESA_KEY] = idEmpresa
         }
     }
+    suspend fun clearUserData() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

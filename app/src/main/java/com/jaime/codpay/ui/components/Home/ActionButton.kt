@@ -30,12 +30,20 @@ fun ActionButton(
     backgroundColor: Color,
     iconTint: Color = Color.White,
     textColor: Color = Color.White,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true,
 ){
     Surface(
         modifier = Modifier
             .size(width = 100.dp, height = 100.dp)
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = {
+                    if (enabled) { // <-- Condiciona la ejecución del onClick
+                        onClick()
+                    }
+                },
+                enabled = enabled,
+            ),
         shape = RoundedCornerShape(16.dp),
         color = backgroundColor,
         tonalElevation = 4.dp,

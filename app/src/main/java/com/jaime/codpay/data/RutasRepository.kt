@@ -8,6 +8,7 @@ class RutasRepository(
     private val apiService: ApiService,
     private val userDataStore: UserDataStore,
     private val rutaDataStore: RutaDataStore,
+    //private val paqueteDataStore: PaqueteDataStore,
     private val paquetesRepository: PaquetesRepository
 ) {
     suspend fun getRutas(): List<Ruta> {
@@ -35,7 +36,8 @@ class RutasRepository(
                         Log.d("RutasRepository", "Llamando a getPaquetesPorRuta() para la ruta: ${ruta.idRuta}")
                         val paquetesResponse = paquetesRepository.getPaquetesPorRuta(ruta.idRuta)
                         if (paquetesResponse.isNotEmpty()) {
-                            // Corrección: Usar paqueteDataStore.savePaquetes()
+                            // Corrección: Usar
+                            //paqueteDataStore.savePaquetes(paquetesResponse)
                             paquetesRepository.paqueteDataStore.savePaquetes(paquetesResponse)
                         }
                     }

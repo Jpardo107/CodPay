@@ -31,8 +31,25 @@ class PaquetesViewModel(
         }
     }
     fun eliminarPaquete(idPaquete: Int) {
-        _paquetes.update { paquetes ->
-            paquetes.filter { it.idPaquete != idPaquete }
+        var paqueteEncontrado = false
+        _paquetes.update { paquetesActuales ->
+            val paqueteAEliminar = paquetesActuales.find { it.idPaquete == idPaquete }
+            if (paqueteAEliminar != null) {
+                paqueteEncontrado = true
+            }
+            paquetesActuales.filter { it.idPaquete != idPaquete }
+        }
+        if (paqueteEncontrado) {
+            Log.d("PaquetesViewModel_Debug", "Paquete $idPaquete eliminado. Nuevo tamaño de _paquetes: ${_paquetes.value.size}")
+        } else {
+            Log.d("PaquetesViewModel_Debug", "Paquete $idPaquete NO encontrado en la lista para eliminar. Tamaño actual: ${_paquetes.value.size}")
+        }
+    }
+    fun clearPaquetes() {
+        viewModelScope.launch {
+            _paquetes.value = emptyList()
+            // Si el repositorio tiene un caché, también límpialo:
+            // paquetesRepository.clearCachedPaquetes()
         }
     }
 }

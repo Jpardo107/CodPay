@@ -57,4 +57,9 @@ class RutaDataStore(private val context: Context) {
             idRuta
         }
     }
+    suspend fun clearRutas() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }
