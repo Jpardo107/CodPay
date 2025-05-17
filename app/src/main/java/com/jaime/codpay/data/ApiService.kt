@@ -26,4 +26,9 @@ interface ApiService {
     @GET("envios.php?recurso=envios")
     suspend fun getEnvios(@Query("idEmpresaB2B") idEmpresa: Int): Response<EnvioResponse>
 
+    @POST("pagosPedidos.php")
+    suspend fun registrarPago(
+        @Body pagoRequest: PagoRequest
+    ): Response<PagoResponse>
+
 }
