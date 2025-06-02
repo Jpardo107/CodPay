@@ -152,7 +152,7 @@ fun LoginScreen(navController: NavController) {
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Green,
+                containerColor = Color.Blue,
                 contentColor = Color.White
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
@@ -191,7 +191,7 @@ fun LoginScreen(navController: NavController) {
 
         // Botón final para iniciar sesión con código
         Button(
-            onClick = { /* acción futura */ },
+            onClick = { loginViewModel.validarCodigo(email, codigo) },
             modifier = Modifier
                 .width(200.dp)
                 .height(56.dp),

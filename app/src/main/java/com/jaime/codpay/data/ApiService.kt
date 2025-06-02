@@ -10,7 +10,11 @@ import retrofit2.http.Query
 interface ApiService {
 
     @POST("loginConductor.php") // Endpoint para el login
-    fun login(@Body loginRequest: LoginRequest): Call<LoginResponse> // Devuelve un objeto LoginResponse
+    fun login(@Body loginRequest: LoginRequest): Call<MfaPendingResponse> // Devuelve un objeto LoginResponse
+
+    @POST("validarMFAconductor.php")
+    fun validarMFA(@Body request: MfaValidationRequest): Call<LoginResponse>
+
 
     @GET("envios.php?recurso=rutas")
     suspend fun getRutas(

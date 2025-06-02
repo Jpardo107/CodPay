@@ -2,8 +2,9 @@ package com.jaime.codpay.data
 
 data class LoginResponse(
     val status: String,
-    val token: String,
-    val conductor: Conductor
+    val message: String?,
+    val token: String?,
+    val conductor: Conductor?
 )
 
 data class Conductor(

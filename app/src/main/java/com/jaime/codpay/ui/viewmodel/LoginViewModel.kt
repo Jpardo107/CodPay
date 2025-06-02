@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.jaime.codpay.data.RetrofitClient
-import com.jaime.codpay.data.LoginResponse
 import com.jaime.codpay.data.LoginRequest
+import com.jaime.codpay.data.LoginResponse
+import com.jaime.codpay.data.MfaPendingResponse
+import com.jaime.codpay.data.MfaValidationRequest
 import com.jaime.codpay.data.RutaDataStore
 import retrofit2.Call
 import retrofit2.Callback
@@ -41,31 +43,59 @@ class LoginViewModel(
         val loginRequest = LoginRequest(email, clave)
         val call = apiService.login(loginRequest)
 
-        call.enqueue(object : Callback<LoginResponse> {
-            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+        call.enqueue(object : Callback<MfaPendingResponse> {
+            override fun onResponse(call: Call<MfaPendingResponse>, response: Response<MfaPendingResponse>) {
                 _isLoading.value = false
                 if (response.isSuccessful) {
-                    _loginResponse.value = response.body()
-                    val loginResponse = response.body()!!
-                    viewModelScope.launch {
-                        userDataStore.saveUser(
-                            loginResponse.conductor.idConductor,
-                            loginResponse.conductor.nombreUserB2B,
-                            loginResponse.conductor.emailUserB2B,
-                            loginResponse.token,
-                            loginResponse.conductor.apellidosUserB2B,
-                            loginResponse.conductor.telefonoUserB2B,
-                            loginResponse.conductor.rutUsuarioB2B,
-                            loginResponse.conductor.idEmpresa,
-                            loginResponse.conductor.estadoUsuarioB2B
-                        )
-                        Log.d("LoginViewModel", "Datos guardados: ${loginResponse.conductor}")
-                        // Llamar a getRutas() después de un login exitoso
-                        rutasRepository.getRutas()
-                        userDataStore.saveIdEmpresa(loginResponse.conductor.idEmpresa)
+                    val res = response.body()
+                    if (res?.status == "success" && res.mfa == "pending") {
+                        Log.d("LoginViewModel", "Código enviado al correo: ${res.message}")
+                    } else {
+                        _error.value = res?.message ?: "Respuesta inesperada del servidor"
                     }
                 } else {
                     _error.value = "Error en el login: ${response.code()}"
+                }
+            }
+
+            override fun onFailure(call: Call<MfaPendingResponse>, t: Throwable) {
+                _isLoading.value = false
+                _error.value = "Error de red: ${t.message}"
+            }
+        })
+    }
+    fun validarCodigo(email: String, codigo: String) {
+        _isLoading.value = true
+        _error.value = null
+        val request = MfaValidationRequest(email, codigo)
+        val call = apiService.validarMFA(request)
+
+        call.enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                _isLoading.value = false
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    val loginResponse = response.body()!!
+                    _loginResponse.value = loginResponse
+                    viewModelScope.launch {
+                        val conductor = loginResponse.conductor
+                        if (conductor != null && loginResponse.token != null) {
+                            userDataStore.saveUser(
+                                conductor.idConductor,
+                                conductor.nombreUserB2B,
+                                conductor.emailUserB2B,
+                                loginResponse.token,
+                                conductor.apellidosUserB2B,
+                                conductor.telefonoUserB2B,
+                                conductor.rutUsuarioB2B,
+                                conductor.idEmpresa,
+                                conductor.estadoUsuarioB2B
+                            )
+                        userDataStore.saveIdEmpresa(conductor.idEmpresa)
+                        }
+                        rutasRepository.getRutas()
+                    }
+                } else {
+                    _error.value = response.body()?.message ?: "Error al validar el código"
                 }
             }
 
