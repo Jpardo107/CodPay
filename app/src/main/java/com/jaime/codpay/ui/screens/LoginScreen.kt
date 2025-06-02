@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AssignmentInd
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.VpnKey
@@ -59,6 +61,7 @@ fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var codigo by remember { mutableStateOf("") }
     val context = LocalContext.current
     val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(context))
 
@@ -81,9 +84,9 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .height(200.dp)
         )
-        Spacer(modifier = Modifier.height(56.dp))
-        Text(text = "Bienvenido a CodPay", style = MaterialTheme.typography.displaySmall)
-        Spacer(modifier = Modifier.height(56.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Bienvenido a CODPay", style = MaterialTheme.typography.displaySmall)
+        Spacer(modifier = Modifier.height(24.dp))
         TextField(
             value = email,
             onValueChange = { email = it },
@@ -137,7 +140,7 @@ fun LoginScreen(navController: NavController) {
                 .align(Alignment.End)
         )
 
-        Spacer(modifier = Modifier.height(56.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
@@ -149,10 +152,54 @@ fun LoginScreen(navController: NavController) {
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,
+                containerColor = Color.Green,
                 contentColor = Color.White
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.AssignmentInd,
+                contentDescription = "check",
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(if (isLoading) "Cargando..." else "Solicitar codigo")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = codigo,
+            onValueChange = { codigo = it },
+            label = { Text("Código recibido") },
+            leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Código") },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color(rgb(231, 231, 231)),
+                unfocusedContainerColor = Color(rgb(208, 208, 208)),
+                disabledContainerColor = Color(0xFFF6F6F6),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Botón final para iniciar sesión con código
+        Button(
+            onClick = { /* acción futura */ },
+            modifier = Modifier
+                .width(200.dp)
+                .height(56.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White
+            ),
         ) {
             Icon(
                 imageVector = Icons.Default.VpnKey,
@@ -160,12 +207,17 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier.size(20.dp)
             )
             Spacer(Modifier.width(8.dp))
-            Text(if (isLoading) "Cargando..." else "Iniciar sesión")
+            Text("Iniciar sesión")
         }
-        Spacer(modifier = Modifier.height(16.dp))
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+
         if (isLoading) {
             CircularProgressIndicator()
         }
+
+
 
         LaunchedEffect(key1 = error) {
             if (error != null) {

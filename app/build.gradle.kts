@@ -83,9 +83,12 @@ dependencies {
     implementation(libs.mpandroidchart)
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
     //Datastore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.datastore:datastore-preferences-core:1.0.0")
+    //Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
 
 }
