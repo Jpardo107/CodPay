@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.jaime.codpay.data.ApiService
+import com.jaime.codpay.data.Envio
 import com.jaime.codpay.data.PaqueteDataStore
 import com.jaime.codpay.data.PaquetesRepository
 import com.jaime.codpay.data.Ruta
@@ -35,6 +36,7 @@ class RutasViewModel(
 
     private val _isRouteCurrentlyInitialized = MutableStateFlow(false)
     val isRouteCurrentlyInitialized: StateFlow<Boolean> = _isRouteCurrentlyInitialized.asStateFlow()
+
 
     init {
         Log.d(

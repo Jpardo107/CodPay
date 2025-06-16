@@ -46,13 +46,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
+import com.jaime.codpay.data.EnviosRepository
+import com.jaime.codpay.data.EnviosRepositoryImpl
 import com.jaime.codpay.data.Paquete
+import com.jaime.codpay.data.PaqueteConEnvio
 import com.jaime.codpay.data.QrData
+import com.jaime.codpay.data.RetrofitClient
+import com.jaime.codpay.data.RutaDataStore
+import com.jaime.codpay.data.UserDataStore
 import com.jaime.codpay.ui.components.DeliveryPackage.QrPreviewBox
 import com.jaime.codpay.ui.components.InitRoute.ConfirmacionDialog
 import com.jaime.codpay.ui.components.InitRoute.StartRouteButton
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
 import com.jaime.codpay.ui.theme.CodPayTheme
+import com.jaime.codpay.ui.viewmodel.EnviosViewModel
+import com.jaime.codpay.ui.viewmodel.EnviosViewModelFactory
 import com.jaime.codpay.ui.viewmodel.PaquetesViewModel
 import com.jaime.codpay.ui.viewmodel.PaquetesViewModelFactory
 import com.jaime.codpay.ui.viewmodel.RutasViewModel
@@ -83,30 +91,62 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
     val gson = Gson()
 
     val paquetesPendientes by paquetesViewModel.paquetes.collectAsState()
+    val paquetesPendientesConEnvio by paquetesViewModel.paquetesConEnvio.collectAsState()
+
     val initialPackageCountLoaded = remember { mutableStateOf(false) }
     val initialPackageCount = remember { mutableStateOf(0) }
 
     val cameraPermissionGranted by rememberCameraPermissionState()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val userDataStore = UserDataStore(context)
+    val rutaDataStore = RutaDataStore(context)
+    val enviosRepository = EnviosRepositoryImpl()
 
-    LaunchedEffect(paquetesPendientes) {
-        if (!initialPackageCountLoaded.value && paquetesPendientes.isNotEmpty()) {
-            initialPackageCount.value = paquetesPendientes.size
+    val enviosViewModel: EnviosViewModel = viewModel(
+        viewModelStoreOwner = viewModelStoreOwner,
+        factory = EnviosViewModelFactory(context = context, enviosRepository, userDataStore, rutaDataStore )
+    )
+
+    val envios by enviosViewModel.envios.collectAsState()
+    val paquetesConEnvio by paquetesViewModel.paquetesConEnvio.collectAsState()
+
+    LaunchedEffect(Unit) {
+        enviosViewModel.getEnvios()
+    }
+
+    LaunchedEffect(envios) {
+        if (envios.isNotEmpty()) {
+            paquetesViewModel.setEnvios(envios)
+        }
+    }
+
+
+
+//    LaunchedEffect(rutas) {
+//        if (envios.isNotEmpty()) {
+//            paquetesViewModel.setEnvios(envios)
+//        }
+//    }
+
+    LaunchedEffect(paquetesPendientesConEnvio) {
+        if (!initialPackageCountLoaded.value && paquetesPendientesConEnvio.isNotEmpty()) {
+            initialPackageCount.value = paquetesPendientesConEnvio.size
             initialPackageCountLoaded.value = true
             Log.d("InitRoute_Debug", "Conteo inicial establecido: ${initialPackageCount.value}")
         }
     }
 
+
     val allPackagesScanned by remember(
         initialPackageCountLoaded.value,
         initialPackageCount.value,
-        paquetesPendientes
+        paquetesPendientesConEnvio
     ) {
         derivedStateOf {
             val countIsLoaded = initialPackageCountLoaded.value
             val initialCount = initialPackageCount.value
-            val pendientesEmpty = paquetesPendientes.isEmpty()
+            val pendientesEmpty = paquetesPendientesConEnvio.isEmpty()
             Log.d("InitRoute_Debug", "allPackagesScanned Check: Loaded=$countIsLoaded, InitialCount=$initialCount, PendientesEmpty=$pendientesEmpty")
 
             val result = countIsLoaded && initialCount > 0 && pendientesEmpty
@@ -146,7 +186,7 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
                     onQrScanned = { qrCode ->
                         try {
                             val qrData = gson.fromJson(qrCode, QrData::class.java)
-                            paquetesViewModel.eliminarPaquete(qrData.idPaquete)
+                            paquetesViewModel.eliminarPaqueteConEnvio(qrData.idPaquete)
                             Log.d("QR_SCAN", "ID Paquete escaneado: ${qrData.idPaquete}")
                         } catch (e: Exception) {
                             Log.e("QR_SCAN", "Error al parsear el QR", e)
@@ -179,8 +219,8 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(paquetes, key = { item -> item.idPaquete }) { paquete ->
-                    PackageItem(paquete = paquete, modifier = Modifier.animateItemPlacement())
+                items(paquetesConEnvio, key = { item -> item.idPaquete }) { paqueteConEnvio ->
+                    PaqueteConEnvioItem(paqueteConEnvio = paqueteConEnvio, modifier = Modifier.animateItemPlacement())
                 }
             }
         }
@@ -221,26 +261,55 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
     }
 }
 
+//@Composable
+//fun PackageItem(PaqueteConEnvio: paqueteConEnvio, modifier: Modifier = Modifier) {
+//    Surface(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(8.dp)
+//            .height(60.dp),
+//        shape = RoundedCornerShape(8.dp),
+//        color = Color(0xFFb0A5A6)
+//    ) {
+//        Column(
+//            verticalArrangement = Arrangement.SpaceEvenly,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            Text(
+//                text = "Código B2C: ${paquete.codigoPaquete}",
+//                fontWeight = FontWeight.Bold,
+//                fontSize = 18.sp
+//            )
+//            Text(text = "Descripción: ${paquete.descripcionPaquete}", fontSize = 16.sp)
+//        }
+//    }
+//}
+
 @Composable
-fun PackageItem(paquete: Paquete, modifier: Modifier = Modifier) {
+fun PaqueteConEnvioItem(paqueteConEnvio: PaqueteConEnvio, modifier: Modifier = Modifier) {
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .height(60.dp),
+            .height(120.dp),
         shape = RoundedCornerShape(8.dp),
         color = Color(0xFFb0A5A6)
     ) {
         Column(
             verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(12.dp)
         ) {
             Text(
-                text = "Código: ${paquete.codigoPaquete}",
+                text = "Codigo B2C: ${paqueteConEnvio.numeroRefPedidoB2C}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
-            Text(text = "Descripción: ${paquete.descripcionPaquete}", fontSize = 16.sp)
+            Text(text = "Cliente B2C: ${paqueteConEnvio.nombreClienteB2C}", fontSize = 16.sp)
+            //Text(text = "Cliente B2C: Default", fontSize = 16.sp)
+//            Text(text = "Cliente: ${paqueteConEnvio.clienteNombre}", fontSize = 14.sp)
+//            Text(text = "Dirección: ${paqueteConEnvio.direccionEntrega}, ${paqueteConEnvio.comunaEntrega}", fontSize = 14.sp)
+//            Text(text = "Pedido B2C: ${paqueteConEnvio.numeroRefPedidoB2C} - ClienteB2C: ${paqueteConEnvio.idClienteB2C}", fontSize = 14.sp)
         }
     }
 }
+
