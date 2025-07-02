@@ -30,12 +30,14 @@ import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.jaime.codpay.data.Envio
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
+import com.jaime.codpay.ui.viewmodel.EntregarViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RechazarScreen(
     navController: NavController,
     envioJson: String,
+    entregarViewModel: EntregarViewModel,
     onRechazarClick: (String) -> Unit
 ) {
     // Deserializar el JSON a un objeto Envio
@@ -115,7 +117,16 @@ fun RechazarScreen(
             Button(
                 onClick = {
                     if (motivo.isNotBlank()) {
-                        onRechazarClick(motivo)
+                        envioData?.let { envio ->
+                            entregarViewModel.actualizarEstadoEnvio(envio.idEnvio, "Fallido") { exito ->
+                                if (exito) {
+                                    Toast.makeText(context, "Pedido rechazado correctamente", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
+                                } else {
+                                    Toast.makeText(context, "Error al rechazar el pedido", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
                     } else {
                         Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
                     }

@@ -34,5 +34,22 @@ class PedidosRepositoryImpl : PedidosRepository {
         return response.isSuccessful
     }
 
+    suspend fun reagendarEnvio(idEnvio: Int, nuevaFecha: String): Boolean {
+        return try {
+            val request = EnvioReagendamientoRequest(
+                idEnvio = idEnvio,
+                estadoEnvio = "Reprogramado",
+                fechaReprogramada = nuevaFecha
+            )
+            val response = apiService.reagendarEnvio(request)
+            Log.d("EnviosRepositoryImpl", "Reagendar: $request → ${response.code()}")
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("EnviosRepositoryImpl", "Error reagendando envio", e)
+            false
+        }
+    }
+
+
 
 }

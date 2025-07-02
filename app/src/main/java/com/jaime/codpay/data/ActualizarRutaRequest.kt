@@ -7,3 +7,8 @@ data class ActualizarRutaRequest(
     val quitar: List<Int>,
     val estadoRuta: String
 )
+
+data class ActualizarEstadoRutaRequest(
+    val idRuta: Int,
+    val estadoRuta: String
+)

@@ -11,11 +11,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.jaime.codpay.data.EnviosRepository
+import com.jaime.codpay.data.EnviosRepositoryImpl
+import com.jaime.codpay.data.PagosRepository
+import com.jaime.codpay.data.RetrofitClient
 import com.jaime.codpay.ui.navigation.Screen
 import com.jaime.codpay.ui.screens.DeliveryPackageScreen
 import com.jaime.codpay.ui.screens.DeliveryScreen
@@ -28,6 +33,8 @@ import com.jaime.codpay.ui.screens.RechazarScreen
 import com.jaime.codpay.ui.screens.TwoFactorScreen
 import com.jaime.codpay.ui.screens.WatchRouteScreen
 import com.jaime.codpay.ui.theme.CodPayTheme
+import com.jaime.codpay.ui.viewmodel.EntregarViewModel
+import com.jaime.codpay.ui.viewmodel.EntregarViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,7 +94,7 @@ class MainActivity : ComponentActivity() {
                     arguments = listOf(navArgument("envioJson") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val envioJson = backStackEntry.arguments?.getString("envioJson") ?: ""
-                    ReagendarScreen(navController = navController, onReagendarClick = { motivo, fecha -> /* acción */ },envioJson = envioJson)
+                    ReagendarScreen(navController = navController,envioJson = envioJson)
                 }
 
                 composable(
@@ -95,8 +102,24 @@ class MainActivity : ComponentActivity() {
                     arguments = listOf(navArgument("envioJson") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val envioJson = backStackEntry.arguments?.getString("envioJson") ?: ""
-                    RechazarScreen(navController = navController, onRechazarClick = { motivo -> /* acción */ },envioJson = envioJson)
+
+                    // Instancias de repositorios (ajústalo si tienes contenedor de dependencias)
+                    val apiService = RetrofitClient.instance
+                    val pagosRepository = PagosRepository(apiService)
+                    val enviosRepository = EnviosRepositoryImpl()
+
+                    val entregarViewModel: EntregarViewModel = viewModel(
+                        factory = EntregarViewModelFactory(pagosRepository, enviosRepository)
+                    )
+
+                    RechazarScreen(
+                        navController = navController,
+                        envioJson = envioJson,
+                        entregarViewModel = entregarViewModel,
+                        onRechazarClick = { motivo -> /* luego lo usamos dentro de RechazarScreen */ }
+                    )
                 }
+
 
             }
         }

@@ -26,11 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.jaime.codpay.data.Envio
 import com.jaime.codpay.ui.components.InitRoute.TitleSection
 import com.jaime.codpay.ui.components.ReagendarScreen.DatePickerField
+import com.jaime.codpay.ui.viewmodel.EnviosViewModel
+import com.jaime.codpay.ui.viewmodel.EnviosViewModelFactoryDelivery
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +41,6 @@ import java.time.LocalDate
 fun ReagendarScreen(
     navController: NavController,
     envioJson: String,
-    onReagendarClick: (String, LocalDate) -> Unit
 ) {
     // Deserializar el JSON a un objeto Envio
     val gson = Gson()
@@ -52,6 +54,8 @@ fun ReagendarScreen(
     var motivo by remember { mutableStateOf("") }
     var fecha by remember { mutableStateOf<LocalDate?>(null) }
     val context = LocalContext.current
+    val viewModel: EnviosViewModel = viewModel(factory = EnviosViewModelFactoryDelivery(context))
+
 
     Box(
         modifier = Modifier
@@ -128,12 +132,22 @@ fun ReagendarScreen(
 
             Button(
                 onClick = {
-                    if (motivo.isNotBlank() && fecha != null) {
-                        onReagendarClick(motivo, fecha!!)
+                    if (motivo.isNotBlank() && fecha != null && envioData != null) {
+                        val fechaFormateada = fecha.toString() // yyyy-MM-dd
+
+                        viewModel.reagendarEnvio(envioData, fechaFormateada) { exito ->
+                            if (exito) {
+                                Toast.makeText(context, "Envío reagendado correctamente", Toast.LENGTH_SHORT).show()
+                                navController.popBackStack()
+                            } else {
+                                Toast.makeText(context, "Error al reagendar", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     } else {
                         Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
                     }
-                },
+                }
+                ,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp),

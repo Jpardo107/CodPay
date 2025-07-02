@@ -42,5 +42,15 @@ interface ApiService {
     @PUT("envios.php?recurso=rutas")
     suspend fun actualizarRuta(@Body body: ActualizarRutaRequest): Response<Any>
 
+    @PUT("envios.php?recurso=envios")
+    suspend fun actualizarEstadoEnvio(@Body envio: EnvioActualizacionRequest): Response<Unit>
+
+    @PUT("envios.php?recurso=envios")
+    suspend fun reagendarEnvio(@Body envio: EnvioReagendamientoRequest): Response<Unit>
+
+
+    @PUT("envios.php?recurso=rutas")
+    suspend fun actualizarEstadoRuta(@Body body: ActualizarEstadoRutaRequest): Response<Unit>
+
 
 }

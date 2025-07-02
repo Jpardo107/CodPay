@@ -61,45 +61,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import java.io.IOException
 
-//fun Context.createImageFile(): File {
-//    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-//    val imageFileName = "JPEG_" + timeStamp + "_"
-//    val storageDir = getExternalFilesDir(null) // O Environment.DIRECTORY_PICTURES si lo cambiaste
-//
-//
-//    if (storageDir == null) {
-//        Log.e("createImageFile", "getExternalFilesDir es NULO. ¿Problema de almacenamiento o permisos?")
-//        // Lanza una excepción o maneja este error críticamente,
-//        // porque no puedes crear el archivo.
-//        throw IOException("External storage directory is null")
-//    }
-//
-//    if (!storageDir.exists()) {
-//        val dirCreated = storageDir.mkdirs()
-//        Log.d("createImageFile", "Directorio de almacenamiento no existía. ¿Creado?: $dirCreated - Path: ${storageDir.absolutePath}")
-//        if (!dirCreated && !storageDir.exists()) { // Doble chequeo por si mkdirs falla silenciosamente
-//            Log.e("createImageFile", "¡FALLO al crear el directorio de almacenamiento!: ${storageDir.absolutePath}")
-//            throw IOException("Failed to create storage directory")
-//        }
-//    } else {
-//        Log.d("createImageFile", "Directorio de almacenamiento ya existe: ${storageDir.absolutePath}")
-//    }
-//
-//    Log.d("createImageFile", "Intentando crear archivo temporal en: ${storageDir.absolutePath} con nombre base: $imageFileName")
-//
-//    return try {
-//        File.createTempFile(
-//            imageFileName, /* prefix */
-//            ".jpg",        /* suffix */
-//            storageDir     /* directory */
-//        ).apply {
-//            Log.d("createImageFile", "ÉXITO al crear archivo temporal: ${this.absolutePath}, Tamaño: ${this.length()}")
-//        }
-//    } catch (ex: IOException) {
-//        Log.e("createImageFile", "ERROR al crear archivo temporal", ex)
-//        throw ex // Relanza para que el llamador sepa
-//    }
-//}
+
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalPermissionsApi::class)
 @Composable

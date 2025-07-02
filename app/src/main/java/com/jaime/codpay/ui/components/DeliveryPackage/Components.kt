@@ -20,24 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-//@Composable
-//fun ScanButton(onClick: () -> Unit){
-//    Button(
-//        onClick = onClick,
-//        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-//        shape = RoundedCornerShape(12.dp),
-//        modifier = Modifier
-//            .height(64.dp)
-//            .width(86.dp)
-//    ) {
-//        Text(text = "Scan", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-//    }
-//}
-
-
-
 
 @Composable
 fun QrPreviewBox(onQrScanned: (String) -> Unit){
@@ -53,10 +35,7 @@ fun QrPreviewBox(onQrScanned: (String) -> Unit){
             .fillMaxWidth()
             .padding(horizontal = 80.dp, vertical = 80.dp)
     )
-
 }
-
-
 
 @Composable
 fun PedidoInput(pedido: String, onPedidoChange: (String) -> Unit){

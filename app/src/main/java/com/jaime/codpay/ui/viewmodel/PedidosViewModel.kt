@@ -33,7 +33,7 @@ class PedidosViewModel(
             try {
                 val idEmpresa = userDataStore.getUserIdEmpresa.first() ?: 0
                 val pedidosResponse = pedidosRepository.getPedidos(idEmpresa)
-                val pedidosFiltrados = pedidosResponse.filter { it.estadoPedido == "Creado" }
+                val pedidosFiltrados = pedidosResponse.filter { it.estadoPedido == "Impreso" }
                 _pedidos.value = pedidosFiltrados
             } catch (e: Exception) {
                 _error.value = "Error al obtener los pedidos: ${e.message}"

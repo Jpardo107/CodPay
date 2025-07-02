@@ -50,4 +50,29 @@ class EnviosViewModel(
         Log.d("EnviosViewModel", "Lista de envíos: ${_envios.value}")
         return _envios.value.find { it.numeroRefPedidoB2C == idEnvio }
     }
+    fun actualizarEstadoDeEnvios(envios: List<Envio>, nuevoEstado: String, onFinalizado: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            var todosExitosos = true
+
+            for (envio in envios) {
+                Log.e("EnviosViewModel", "idEnvio: ${envio.idEnvio} -- nuevoEstado: $nuevoEstado")
+                val exito = enviosRepository.actualizarEstadoEnvio(envio.idEnvio, nuevoEstado)
+                if (!exito) {
+                    todosExitosos = false
+                    Log.e("EnviosViewModel", "Error al actualizar estado de envio ${envio.idEnvio}")
+                }
+            }
+
+            onFinalizado(todosExitosos)
+        }
+    }
+    fun reagendarEnvio(envio: Envio, nuevaFecha: String, onResultado: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val resultado = enviosRepository.reagendarEnvio(envio.idEnvio, nuevaFecha)
+            onResultado(resultado)
+        }
+    }
+
+
+
 }

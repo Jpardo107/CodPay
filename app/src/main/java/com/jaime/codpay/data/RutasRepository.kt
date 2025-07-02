@@ -58,4 +58,17 @@ class RutasRepository(
         }
 
     }
+
+    suspend fun actualizarEstadoRuta(idRuta: Int, estadoRuta: String): Boolean {
+        val body = ActualizarEstadoRutaRequest(idRuta = idRuta, estadoRuta = estadoRuta)
+        return try {
+            val response = apiService.actualizarEstadoRuta(body)
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("EstadoRuta", "Error al actualizar estado de ruta", e)
+            false
+        }
+    }
+
+
 }

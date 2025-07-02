@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.jaime.codpay.data.Envio
+import com.jaime.codpay.data.EnviosRepositoryImpl
 import com.jaime.codpay.data.PagosRepository
 import com.jaime.codpay.data.RetrofitClient
 import com.jaime.codpay.data.UserDataStore
@@ -53,11 +54,14 @@ fun EntregarScreen(navController: NavController, envioJson: String) {
     var pagoRecibido by remember { mutableStateOf("") }
     var mostrarDialogoTarjeta by remember { mutableStateOf(false) }
 
+
     val apiService = remember { RetrofitClient.instance }
     val pagosRepository = remember { PagosRepository(apiService) }
     val userDataStore = remember { UserDataStore(context) }
+    val enviosRepository = remember { EnviosRepositoryImpl() }
+
     val entregarViewModelFactory = remember(pagosRepository) {
-        EntregarViewModelFactory(pagosRepository)
+        EntregarViewModelFactory(pagosRepository, enviosRepository)
     }
     val viewModel: EntregarViewModel = viewModel(factory = entregarViewModelFactory)
 
@@ -74,6 +78,7 @@ fun EntregarScreen(navController: NavController, envioJson: String) {
             null
         }
     }
+    val envioEntregado = envioData?.estadoEnvio == "Entregado"
 
     // Pasar datos al ViewModel cuando estén disponibles
     LaunchedEffect(envioData, idEmpresaB2BFromStore) {
@@ -104,14 +109,31 @@ fun EntregarScreen(navController: NavController, envioJson: String) {
                     "Pago exitoso: ${resultado.pagoResponse.message}",
                     Toast.LENGTH_LONG
                 ).show()
-                mostrarDialogoEfectivo = false // Cierra el diálogo de efectivo
-                // Navegar a la siguiente pantalla o realizar otra acción
-                navController.navigate("delivery_package_screen") {
-                    // Opcional: Limpiar backstack si es necesario
-                    // popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                mostrarDialogoEfectivo = false
+
+                // 🔁 Actualizar estado del envío a "Entregado"
+                val envio = viewModel.envioActual
+                if (envio != null) {
+                    viewModel.actualizarEstadoEnvio(envio.idEnvio, "Entregado") { exito ->
+                        if (exito) {
+                            Log.i("EntregarScreen", "Estado del envío actualizado a 'Entregado'")
+                            navController.navigate("delivery_package_screen")
+                        } else {
+                            Log.e("EntregarScreen", "Error al actualizar estado del envío")
+                            Toast.makeText(
+                                context,
+                                "Pago registrado, pero no se pudo actualizar el estado del envío.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        viewModel.resetResultadoPago()
+                    }
+                } else {
+                    Log.e("EntregarScreen", "envioActual es null al intentar actualizar estado del envío")
+                    viewModel.resetResultadoPago()
                 }
-                viewModel.resetResultadoPago() // Resetea el estado en el ViewModel
             }
+
 
             is ResultadoPago.Error -> {
                 Log.e("EntregarScreen", "Error en el pago: ${resultado.mensaje}")
@@ -171,6 +193,7 @@ fun EntregarScreen(navController: NavController, envioJson: String) {
             onPagoRecibidoChange = { pagoRecibido = it },
             onPagoExitoso = {
                 viewModel.procesarPagoEfectivo()
+
             },
             onPagoErroneo = {
                 mostrarDialogoEfectivo = false
@@ -222,15 +245,21 @@ fun EntregarScreen(navController: NavController, envioJson: String) {
             AditionalCommment(comentario = envioData?.clienteFinal?.referenciaDireccion ?: "N/A")
             Recaudation(
                 amount = envioData?.valorRecaudar?.toDouble() ?: 0.0,
+                enabled = !envioEntregado,
                 onRecaudarClick = {
+                    if (envioEntregado) {
+                        Toast.makeText(
+                            context,
+                            "Este envío ya fue entregado.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@Recaudation
+                    }
+
+                    // El resto como ya lo tienes:
                     if (viewModel.envioActual != null && viewModel.idEmpresaB2B != null) {
                         mostrarDialogoPayment = true
                     } else {
-                        Toast.makeText(
-                            context,
-                            "Cargando datos del envío, intente de nuevo en un momento.",
-                            Toast.LENGTH_LONG
-                        ).show()
                         Toast.makeText(
                             context,
                             "Cargando datos del envío, intente de nuevo en un momento.",

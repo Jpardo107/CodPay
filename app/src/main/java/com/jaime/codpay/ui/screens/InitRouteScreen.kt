@@ -53,6 +53,7 @@ import com.jaime.codpay.data.PaqueteConEnvio
 import com.jaime.codpay.data.QrData
 import com.jaime.codpay.data.RetrofitClient
 import com.jaime.codpay.data.RutaDataStore
+import com.jaime.codpay.data.RutasRepository
 import com.jaime.codpay.data.UserDataStore
 import com.jaime.codpay.ui.components.DeliveryPackage.QrPreviewBox
 import com.jaime.codpay.ui.components.InitRoute.ConfirmacionDialog
@@ -79,7 +80,10 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
     )
     val paquetesViewModel: PaquetesViewModel = viewModel(
         viewModelStoreOwner = viewModelStoreOwner,
-        factory = PaquetesViewModelFactory(context.applicationContext, rutasViewModel.paquetesRepository)
+        factory = PaquetesViewModelFactory(
+            context.applicationContext,
+            rutasViewModel.paquetesRepository
+        )
     )
     val rutas by rutasViewModel.rutas.collectAsState()
     val paquetes by paquetesViewModel.paquetes.collectAsState()
@@ -105,11 +109,24 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
 
     val enviosViewModel: EnviosViewModel = viewModel(
         viewModelStoreOwner = viewModelStoreOwner,
-        factory = EnviosViewModelFactory(context = context, enviosRepository, userDataStore, rutaDataStore )
+        factory = EnviosViewModelFactory(
+            context = context,
+            enviosRepository,
+            userDataStore,
+            rutaDataStore
+        )
     )
 
     val envios by enviosViewModel.envios.collectAsState()
     val paquetesConEnvio by paquetesViewModel.paquetesConEnvio.collectAsState()
+
+    val rutasRepository = RutasRepository(
+        apiService = RetrofitClient.instance,
+        userDataStore = userDataStore,
+        rutaDataStore = rutaDataStore,
+        paquetesRepository = rutasViewModel.paquetesRepository
+    )
+
 
     LaunchedEffect(Unit) {
         enviosViewModel.getEnvios()
@@ -120,7 +137,6 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
             paquetesViewModel.setEnvios(envios)
         }
     }
-
 
 
 //    LaunchedEffect(rutas) {
@@ -147,7 +163,10 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
             val countIsLoaded = initialPackageCountLoaded.value
             val initialCount = initialPackageCount.value
             val pendientesEmpty = paquetesPendientesConEnvio.isEmpty()
-            Log.d("InitRoute_Debug", "allPackagesScanned Check: Loaded=$countIsLoaded, InitialCount=$initialCount, PendientesEmpty=$pendientesEmpty")
+            Log.d(
+                "InitRoute_Debug",
+                "allPackagesScanned Check: Loaded=$countIsLoaded, InitialCount=$initialCount, PendientesEmpty=$pendientesEmpty"
+            )
 
             val result = countIsLoaded && initialCount > 0 && pendientesEmpty
             Log.d("InitRoute_Debug", "allPackagesScanned Result: $result")
@@ -220,7 +239,10 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(paquetesConEnvio, key = { item -> item.idPaquete }) { paqueteConEnvio ->
-                    PaqueteConEnvioItem(paqueteConEnvio = paqueteConEnvio, modifier = Modifier.animateItemPlacement())
+                    PaqueteConEnvioItem(
+                        paqueteConEnvio = paqueteConEnvio,
+                        modifier = Modifier.animateItemPlacement()
+                    )
                 }
             }
         }
@@ -246,8 +268,40 @@ fun InitRouteScreen(nombreRuta: String, navController: NavController) {
                 onCerrar = { mostrarDialogo = false },
                 onContinuar = {
                     mostrarDialogo = false
-                    rutasViewModel.markRouteAsInitialized()
-                    navController.popBackStack()
+                    enviosViewModel.actualizarEstadoDeEnvios(envios, "En Camino") { exito ->
+                        if (exito) {
+                            Toast.makeText(
+                                context,
+                                "Ruta iniciada. Todos los envíos ahora están En Camino.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            // ✅ 2. Obtener el idRuta correspondiente
+                            val idRuta = rutasViewModel.rutas.value.find { it.nombreRuta == nombreRuta }?.idRuta
+
+                            // ✅ 3. Lanzar coroutine para actualizar el estado de la ruta
+                            if (idRuta != null) {
+                                coroutineScope.launch {
+                                    val exitoRuta = rutasRepository.actualizarEstadoRuta(idRuta, "entregado")
+                                    if (!exitoRuta) {
+                                        Toast.makeText(
+                                            context,
+                                            "No se pudo actualizar el estado de la ruta",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Algunos envíos no pudieron actualizarse.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        rutasViewModel.markRouteAsInitialized()
+                        navController.popBackStack()
+                    }
                 },
                 onEscanearSegunda = {
                     mostrarDialogo = false

@@ -9,6 +9,7 @@ import com.jaime.codpay.data.PagosRepository // Importa tu repositorio
 import com.jaime.codpay.data.PagoRequest
 import com.jaime.codpay.data.PagoResponse
 import com.jaime.codpay.data.Envio // Asumo que tienes una clase Envio con idEnvio y valorRecaudar
+import com.jaime.codpay.data.EnviosRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ sealed class ResultadoPago {
 
 class EntregarViewModel(
     private val pagosRepository: PagosRepository,
+    private val enviosRepository: EnviosRepository
     // Podrías necesitar otros repositorios o fuentes de datos, como para obtener idEmpresaB2B
     // private val userRepository: UserRepository // Ejemplo si idEmpresaB2B viene de datos de usuario
 ) : ViewModel() {
@@ -90,17 +92,23 @@ class EntregarViewModel(
     fun resetResultadoPago() {
         _resultadoPago.value = ResultadoPago.Idle
     }
+    fun actualizarEstadoEnvio(idEnvio: Int, nuevoEstado: String, onResultado: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val exito = enviosRepository.actualizarEstadoEnvio(idEnvio, nuevoEstado)
+            onResultado(exito)
+        }
+    }
 }
 
 
 class EntregarViewModelFactory(
-    private val pagosRepository: PagosRepository
-    // private val userRepository: UserRepository // Ejemplo
+    private val pagosRepository: PagosRepository,
+    private val enviosRepository: EnviosRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(EntregarViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return EntregarViewModel(pagosRepository /*, userRepository */) as T
+            return EntregarViewModel(pagosRepository, enviosRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

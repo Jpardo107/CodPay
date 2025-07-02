@@ -118,42 +118,6 @@ fun HomeScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         UserGreeting(userName = userName ?: "Usuario")
-//        Button(
-//            onClick = {
-//                coroutineScope.launch {
-//                    // 1. Borrar datos del usuario
-//                    userDataStore.clearUserData()
-//
-//                    // 2. Borrar datos de rutas
-//                    rutasViewModel.clearRutas()
-//
-//                    // Borrar datos de rutas y envios
-//                    rutaDataStore.clearRutas()
-//
-//                    // Borrar datos de rutas en viewModel
-//                    rutasViewModel.clearRutas()
-//
-//                    // 3. Borrar datos de paquetes
-//                    paquetesViewModel.clearPaquetes()
-//
-//                    // 4. Navegar a la pantalla de Login y limpiar el backstack
-//                    navController.navigate(Screen.Login.route) {
-//                        popUpTo(navController.graph.startDestinationId) {
-//                            inclusive = true
-//                        }
-//                        launchSingleTop =
-//                            true // Evita múltiples instancias de Login si ya está en el backstack
-//                    }
-//                }
-//            },
-//            modifier = Modifier,
-//            shape = RoundedCornerShape(8.dp),
-//            colors = ButtonDefaults.buttonColors(
-//                containerColor = Color.Red
-//            )
-//        ) {
-//            Text(text = "Cerrar sesion")
-//        }
         Spacer(modifier = Modifier.height(32.dp))
         HomeMenu(
             isRouteInitialized = isRouteInitialized, // Pasar el nuevo estado

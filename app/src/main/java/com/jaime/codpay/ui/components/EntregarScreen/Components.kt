@@ -151,6 +151,7 @@ fun AditionalCommment(
 fun Recaudation(
     modifier: Modifier = Modifier,
     amount: Double,
+    enabled: Boolean = true,
     onRecaudarClick: ()-> Unit
 ){
     Card(
@@ -182,6 +183,7 @@ fun Recaudation(
                 Button(
                     onClick = onRecaudarClick,
                     shape = RoundedCornerShape(8.dp),
+                    enabled = enabled,
                     colors = ButtonDefaults.buttonColors(Color(27, 135, 84))
                 ) {
                     Icon(

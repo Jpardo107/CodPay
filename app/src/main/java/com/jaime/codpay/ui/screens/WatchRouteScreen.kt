@@ -102,7 +102,9 @@ fun WatchRouteScreen(navController: NavController) {
     Log.d("WatchRouteScreen", "idRuta: $idRuta")
     val enviosFromViewModel by enviosViewModel.envios.collectAsState()
     LaunchedEffect(key1 = enviosFromViewModel) {
-        envios = enviosFromViewModel.filter { it.idRuta == idRuta }
+        envios = enviosFromViewModel.filter {
+            it.idRuta == idRuta && it.estadoEnvio == "En Camino"
+        }
         Log.d(
             "WatchRouteScreen",
             "enviosFromViewModel: ${enviosFromViewModel.size}, idRuta: $idRuta, enviosFiltrados: ${envios.size}"
@@ -226,16 +228,18 @@ fun WatchRouteScreen(navController: NavController) {
                     idRuta = idRuta,
                     agregar = bodyAgregar,
                     quitar = emptyList(),
-                    estadoRuta = "programado"
+                    estadoRuta = "entregado"
                 )
 
                 if (exito) {
                     Toast.makeText(context, "Ruta actualizada correctamente", Toast.LENGTH_SHORT).show()
                     resetearProgreso()
                     pedidosViewModel.getPedidos()
+                    enviosViewModel.getEnvios()
                 } else {
                     Toast.makeText(context, "Error al actualizar ruta", Toast.LENGTH_SHORT).show()
                 }
+
             } catch (e: Exception) {
                 Log.e("WatchRouteScreen", "Error al enviar PUT", e)
                 Toast.makeText(context, "Error al actualizar ruta", Toast.LENGTH_SHORT).show()
@@ -570,5 +574,6 @@ fun WatchRouteScreenPreview() {
         }
     }
 }
+
 
 

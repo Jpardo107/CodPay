@@ -8,6 +8,26 @@ class EnviosRepositoryImpl : EnviosRepository {
 
     private val apiService: ApiService = RetrofitClient.instance
 
+     override suspend fun actualizarEstadoEnvio(idEnvio: Int, estado: String): Boolean {
+        return try {
+            val request = EnvioActualizacionRequest(idEnvio, estado)
+            Log.d(
+                "EnviosRepositoryImpl",
+                "Enviando request: $request"
+            )
+            val response = apiService.actualizarEstadoEnvio(request)
+            Log.d(
+                "EnviosRepositoryImpl",
+                "update idEnvio=$idEnvio estado=$estado code=${response.code()} error=${response.errorBody()?.string()}"
+            )
+            Log.d("EnviosRepositoryImpl", "update idEnvio=$idEnvio estado=$estado response.code=${response.code()} error=${response.errorBody()?.string()}")
+            response.isSuccessful
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
     override fun getEnvios(idEmpresa: Int): Flow<List<Envio>> = flow {
         Log.d("EnviosRepositoryImpl", "getEnvios() llamado con idEmpresa: $idEmpresa")
         val url = "https://www.ctinformatica.cl/envios.php?recurso=envios&idEmpresaB2B=$idEmpresa"
@@ -38,4 +58,21 @@ class EnviosRepositoryImpl : EnviosRepository {
         }
 
     }
+
+    override suspend fun reagendarEnvio(idEnvio: Int, nuevaFecha: String): Boolean {
+        return try {
+            val request = EnvioReagendamientoRequest(
+                idEnvio = idEnvio,
+                estadoEnvio = "Reprogramado",
+                fechaReprogramada = nuevaFecha
+            )
+            val response = apiService.reagendarEnvio(request)
+            Log.d("EnviosRepositoryImpl", "Reagendar: $request → ${response.code()}")
+            response.isSuccessful
+        } catch (e: Exception) {
+            Log.e("EnviosRepositoryImpl", "Error reagendando envio", e)
+            false
+        }
+    }
+
 }
